@@ -3,7 +3,8 @@ This component redirect the IP packet sent to an IP host
 to another different one. Doing that the sender doesn't
 know the actual destination of the packet.
 
-Note: IPs are static for this experiment.
+Note: IPs are static for this experiment, and it is 
+limited to first three hosts.
 
 Run mininet as follows:
 
@@ -25,12 +26,10 @@ class ScramblingPing (object):
         connection.addListeners(self)
         self.ips_dict = {
             IPAddr('10.0.0.1'):
-                (IPAddr('10.0.0.4'), EthAddr('00:00:00:00:00:04')),
+                (IPAddr('10.0.0.2'), EthAddr('00:00:00:00:00:02')),
             IPAddr('10.0.0.2'):
                 (IPAddr('10.0.0.3'), EthAddr('00:00:00:00:00:03')),
             IPAddr('10.0.0.3'):
-                (IPAddr('10.0.0.2'), EthAddr('00:00:00:00:00:02')),
-            IPAddr('10.0.0.4'):
                 (IPAddr('10.0.0.1'), EthAddr('00:00:00:00:00:01'))
         }
 
