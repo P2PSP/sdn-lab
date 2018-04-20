@@ -32,16 +32,17 @@ mininet> xterm h1 h2 h3
 ```
 Now we should see 3 terminals that corresponds to the hosts 1, 2 and 3.
 
-Check which IP has each host running:
+Check what IP each host has, run:
 ```
 ifconfig
 ```
 We should have IPs assigned as follows:
 
-Host |  IP
-h1   |  10.0.0.1
-h2   |  10.0.0.2
-h3   |  10.0.0.3
+|Host |    IP    |
+|-----|----------|
+|h1   |  10.0.0.1|
+|h2   |  10.0.0.2|
+|h3   |  10.0.0.3|
 
 In terminals h1, h2 and h3 (in each one) run:
 ```
@@ -53,7 +54,7 @@ In terminal h4 run:
 ```
 nc -u 10.0.0.3 12345
 ```
-Now you we have a netcat client running on h4. Now feel free to write down somthing and press Enter.
+Now we have a netcat client running on h4. Please, feel free to write down somthing and press Enter.
 
 - _Who is receiving messages?_
 - _Is it the peer which IP=10.0.0.3? Sure?_
