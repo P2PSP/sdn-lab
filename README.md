@@ -18,8 +18,8 @@ Run a network with one switch and 4 hosts:
 $ sudo mn --topo single,4 --mac --switch ovsk --controller remote
 ```
 
-Run POX contoller with the scrambling-ping component:
+Run POX contoller with the scrambling-ip component:
 ```
-$ ln -s ~/sdn-lab/scrambling_ping.py ext/scrambling_ping.py
-$ ./pox/pox.py log.level --DEBUG scrambling_ping
+$ ln -s ~/sdn-lab/scrambling_ip.py ext/scrambling_ip.py
+$ ./pox/pox.py log.level --DEBUG scrambling_ip
 ```
