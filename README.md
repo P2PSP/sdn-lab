@@ -1,5 +1,5 @@
 # SDN-LAB
-Some experiments with SDN.
+Some experiments with Software defined Networking (SDN).
 
 ## Requirements
 Install Mininet together with Open vSwitch, OpenFlow wireshark dissector and POX:
