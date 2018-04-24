@@ -1,14 +1,17 @@
 """
-This component redirect the IP packet sent to an IP host
-to another different one. Doing that the sender doesn't
+This component redirect the UDP packets sent to an specific port
+in any host to another different one. Doing that the sender doesn't
 know the actual destination of the packet.
 
-Note: IPs are static for this experiment, and it is
+Note: IPs and port are static for this experiment, and it is
 limited to first three hosts.
 
 Run mininet as follows:
 
 sudo mn --topo single,4 --mac --switch ovsk --controller remote
+
+Run the controller as follows:
+./pox/pox.py log.level --DEBUG scrambling_udp --port=12345
 
 """
 
@@ -21,8 +24,10 @@ log = core.getLogger()
 
 class ScramblingPing (object):
 
-    def __init__(self, connection):
+    def __init__(self, connection, port):
         self.connection = connection
+        self.port = int(port)
+        print("PORT", self.port)
         connection.addListeners(self)
         self.ips_dict = {
             IPAddr('10.0.0.1'):
@@ -42,7 +47,8 @@ class ScramblingPing (object):
             return
 
         ipp = packet.find('ipv4')
-        if ipp:
+        udpp = packet.find('udp')
+        if udpp and udpp.dstport == self.port:
             actions = []
             actions.append(of.ofp_action_dl_addr.set_dst(
                  self.ips_dict[ipp.dstip][1]))
@@ -63,8 +69,8 @@ class ScramblingPing (object):
             self.connection.send(msg)
 
 
-def launch():
+def launch(port):
     def start(event):
         log.debug("Controlling %s" % (event.connection,))
-        ScramblingPing(event.connection)
+        ScramblingPing(event.connection, port)
     core.openflow.addListenerByName("ConnectionUp", start)

@@ -20,7 +20,7 @@ $ sudo mn --topo single,4 --mac --switch ovsk --controller remote
 
 Run POX contoller with the scrambling-ip component:
 ```
-$ ln -s ~/sdn-lab/scrambling_ip.py ext/scrambling_ip.py
+$ ln -s ~/sdn-lab/scrambling_ip.py pox/ext/scrambling_ip.py
 $ ./pox/pox.py log.level --DEBUG scrambling_ip
 ```
 
