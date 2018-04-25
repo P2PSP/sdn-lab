@@ -1,18 +1,5 @@
-# SDN-LAB
-Some experiments with Software defined Networking (SDN).
-
-## Requirements
-Install Mininet together with Open vSwitch, OpenFlow wireshark dissector and POX:
-
-```
-$ git clone git://github.com/mininet/mininet
-$ mininet/util/install.sh -a
-```
-
-## Experiments
-
-### scrambling-ip (as a POX component)
-#### Runing it
+# scrambling_ip (as a POX component)
+## Runing it
 Run a network with one switch and 4 hosts:
 ```
 $ sudo mn --topo single,4 --mac --switch ovsk --controller remote
@@ -20,11 +7,12 @@ $ sudo mn --topo single,4 --mac --switch ovsk --controller remote
 
 Run POX contoller with the scrambling-ip component:
 ```
-$ ln -s ~/sdn-lab/scrambling_ip.py pox/ext/scrambling_ip.py
+$ cd ~
+$ ln -s sdn-lab/scrambling_ip/scrambling_ip.py ~/pox/ext/scrambling_ip.py
 $ ./pox/pox.py log.level --DEBUG scrambling_ip
 ```
 
-#### Testing that it works properly
+## Testing that it works properly
 
 In mininet console run:
 ```
