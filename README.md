@@ -15,6 +15,11 @@ $ git clone git://github.com/mininet/mininet
 $ mininet/util/install.sh -a
 ```
 
+For experiments using Ryo controller:
+```
+$ pip install ryu
+```
+
 ## Experiments
 
 ### scrambling-ip (as a POX component)

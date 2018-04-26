@@ -11,7 +11,7 @@ Run mininet as follows:
 sudo mn --topo single,4 --mac --switch ovsk --controller remote
 
 Run the controller as follows:
-./pox/pox.py log.level --DEBUG scrambling_udp --port=12345
+./pox/pox.py log.level --DEBUG scrambling_pox --port=12345
 
 """
 
