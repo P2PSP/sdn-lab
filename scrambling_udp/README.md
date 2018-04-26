@@ -6,7 +6,7 @@ $ sudo mn --topo single,4 --mac --switch ovsk --controller remote
 ```
 ## scrambling_udp as a POX component
 
-Run POX contoller with the scrambling-ip component:
+Run POX contoller with the scrambling-udp component:
 ```
 $ cd ~
 $ ln -s sdn-lab/scrambling_udp/scrambling_pox.py ~/pox/ext/scrambling_pox.py

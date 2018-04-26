@@ -29,7 +29,7 @@ Note: IPs are static for this experiment, and it is limited to first three hosts
 
 See further instruction on [scrambling_ip](scrambling_ip)
 
-### scrambling-udp (as a POX component)
+### scrambling-udp (POX and Ryu versions)
 This component redirect the UDP packets sent to an specific port in any host to another different one. Doing that the sender doesn't know the actual destination of the packet.
 
 Note: IPs and port are static for this experiment, and it is limited to first three hosts.
