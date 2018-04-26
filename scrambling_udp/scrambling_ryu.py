@@ -37,19 +37,21 @@ class L2Switch(app_manager.RyuApp):
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
         udp_pkt = pkt.get_protocol(udp.udp)
         if udp_pkt and udp_pkt.dst_port == cfg.CONF.udp_port:
+            match = dp.ofproto_parser.OFPMatch(in_port=msg.in_port)
             actions = []
             actions.append(ofp_parser.OFPActionSetDlDst(
                  self.ips_dict[ip_pkt.dst][1]))
             actions.append(ofp_parser.OFPActionSetNwDst(
                 self.ips_dict[ip_pkt.dst][0]))
             actions.append(ofp_parser.OFPActionOutput(port=ofp.OFPP_FLOOD))
-            out = ofp_parser.OFPPacketOut(
-                datapath=dp, buffer_id=msg.buffer_id, in_port=msg.in_port,
-                actions=actions, data=msg.data)
+            out = ofp_parser.OFPFlowMod(
+                datapath=dp, buffer_id=msg.buffer_id,
+                actions=actions, match=match, hard_timeout=30,
+                idle_timeout=10)
             dp.send_msg(out)
         else:
             actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
-            out = ofp_parser.OFPPacketOut(
-                datapath=dp, buffer_id=msg.buffer_id, in_port=msg.in_port,
-                actions=actions, data=msg.data)
-            dp.send_msg(out)
+        out = ofp_parser.OFPPacketOut(
+            datapath=dp, buffer_id=msg.buffer_id, in_port=msg.in_port,
+            actions=actions, data=msg.data)
+        dp.send_msg(out)
