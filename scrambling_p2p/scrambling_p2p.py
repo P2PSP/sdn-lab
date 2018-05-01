@@ -3,6 +3,7 @@ from ryu.controller import ofp_event
 from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.ofproto import ofproto_v1_3
+from ryu.ofproto.ofproto_v1_2 import OFPG_ANY
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ipv4
@@ -62,6 +63,24 @@ class ScramblingP2P(app_manager.RyuApp):
             print("Flow with no buffer_id")
         datapath.send_msg(mod)
 
+    def clean_flows(self, dp):
+        ofp = dp.ofproto
+        parser = dp.ofproto_parser
+        match = parser.OFPMatch()
+        # Delete all flows
+        instructions = []
+        flow_mod = parser.OFPFlowMod(
+            dp, 0, 0, 0,
+            ofp.OFPFC_DELETE, 0, 0,
+            1, ofp.OFPCML_NO_BUFFER,
+            ofp.OFPP_ANY, OFPG_ANY, 0,
+            match, instructions)
+        dp.send_msg(flow_mod)
+        # Install the table-miss flow entry
+        actions = [parser.OFPActionOutput(ofp.OFPP_CONTROLLER,
+                                          ofp.OFPCML_NO_BUFFER)]
+        self.add_flow(dp, 0, match, actions)
+
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
         msg = ev.msg
@@ -88,32 +107,19 @@ class ScramblingP2P(app_manager.RyuApp):
                     dst_mac = 'ff:ff:ff:ff:ff:ff'
                     dst_port = ofp.OFPP_FLOOD
 
-                print("Message to", dst_peer, "from", ip_pkt.src, "sent to",
-                      dst_ip, "via", dst_mac)
                 match = dp.ofproto_parser.OFPMatch(
-                    in_port=in_port, eth_type=0x800)
+                    in_port=in_port, eth_type=0x800, ipv4_dst=dst_peer[0])
                 # 0x800 => IPv4 type.
                 # See more in https://en.wikipedia.org/wiki/EtherType
                 actions = []
                 actions.append(ofp_parser.OFPActionSetField(eth_dst=dst_mac))
                 actions.append(ofp_parser.OFPActionSetField(ipv4_dst=dst_ip))
                 actions.append(ofp_parser.OFPActionOutput(port=dst_port))
-                # TO-DO: Use self.add_flow()
                 if msg.buffer_id != ofp.OFP_NO_BUFFER:
                     self.add_flow(dp, 1, match, actions, msg.buffer_id)
                     return
                 else:
                     self.add_flow(dp, 1, match, actions)
-                '''
-                inst = [ofp_parser.OFPInstructionActions(
-                    ofp.OFPIT_APPLY_ACTIONS, actions)]
-                out = ofp_parser.OFPFlowMod(
-                    command=ofp.OFPFC_ADD,
-                    datapath=dp, buffer_id=msg.buffer_id,
-                    instructions=inst, match=match, hard_timeout=30,
-                    idle_timeout=10)
-                dp.send_msg(out)
-                '''
             else:
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
         else:
