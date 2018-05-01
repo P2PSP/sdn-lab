@@ -41,7 +41,8 @@ class ScramblingP2P(app_manager.RyuApp):
 
         # install the table-miss flow entry. (OF 1.3+)
         match = parser.OFPMatch()
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER)]
+        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
+                                          ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
@@ -54,11 +55,12 @@ class ScramblingP2P(app_manager.RyuApp):
             mod = parser.OFPFlowMod(datapath=datapath, buffer_id=buffer_id,
                                     priority=priority, match=match,
                                     instructions=inst)
+            print("Flow with no buffer_id")
         else:
             mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     match=match, instructions=inst)
+            print("Flow with no buffer_id")
         datapath.send_msg(mod)
-        print("Flow installed")
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -78,37 +80,40 @@ class ScramblingP2P(app_manager.RyuApp):
                 self.ip_to_mac[ip_pkt.src] = eth_pkt.src
                 self.mac_to_port[eth_pkt.src] = in_port
                 if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
-                    dst_mac = self.ip_to_mac[
-                        self.scrambling_list[dst_peer][0]
-                    ]
+                    dst_ip = self.scrambling_list[dst_peer][0]
+                    dst_mac = self.ip_to_mac[dst_ip]
                     dst_port = self.mac_to_port[dst_mac]
                 else:
+                    dst_ip = self.scrambling_list[dst_peer][0]
                     dst_mac = 'ff:ff:ff:ff:ff:ff'
                     dst_port = ofp.OFPP_FLOOD
 
                 print("Message to", dst_peer, "from", ip_pkt.src, "sent to",
-                      self.scrambling_list[dst_peer][0], "via", dst_mac)
-                match = dp.ofproto_parser.OFPMatch(in_port=in_port)
-                    #ipv4_dst=dst_peer[0],
-                    #udp_dst=dst_peer[1])
+                      dst_ip, "via", dst_mac)
+                match = dp.ofproto_parser.OFPMatch(
+                    in_port=in_port, eth_type=0x800)
+                # 0x800 => IPv4 type.
+                # See more in https://en.wikipedia.org/wiki/EtherType
                 actions = []
                 actions.append(ofp_parser.OFPActionSetField(eth_dst=dst_mac))
-                actions.append(ofp_parser.OFPActionSetField(
-                    ipv4_dst=self.scrambling_list[dst_peer][0]))
+                actions.append(ofp_parser.OFPActionSetField(ipv4_dst=dst_ip))
                 actions.append(ofp_parser.OFPActionOutput(port=dst_port))
                 # TO-DO: Use self.add_flow()
                 if msg.buffer_id != ofp.OFP_NO_BUFFER:
                     self.add_flow(dp, 1, match, actions, msg.buffer_id)
-                    print("BUFFERID", msg.buffer_id)
                     return
                 else:
                     self.add_flow(dp, 1, match, actions)
-                #out = ofp_parser.OFPFlowMod(
-                #    command=ofp.OFPFC_ADD,
-                #    datapath=dp, buffer_id=msg.buffer_id,
-                #    actions=actions, match=match, hard_timeout=30,
-                #    idle_timeout=10)
-                #dp.send_msg(out)
+                '''
+                inst = [ofp_parser.OFPInstructionActions(
+                    ofp.OFPIT_APPLY_ACTIONS, actions)]
+                out = ofp_parser.OFPFlowMod(
+                    command=ofp.OFPFC_ADD,
+                    datapath=dp, buffer_id=msg.buffer_id,
+                    instructions=inst, match=match, hard_timeout=30,
+                    idle_timeout=10)
+                dp.send_msg(out)
+                '''
             else:
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
         else:
