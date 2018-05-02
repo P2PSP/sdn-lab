@@ -10,6 +10,7 @@ from ryu.lib.packet import ipv4
 from ryu.lib.packet import udp
 from ryu import cfg
 from random import sample
+from collections import OrderedDict
 
 
 class ScramblingP2P(app_manager.RyuApp):
@@ -22,17 +23,21 @@ class ScramblingP2P(app_manager.RyuApp):
         self.ip_to_mac = {}
         self.mac_to_port = {}
         cfg.CONF.register_opts([
-            cfg.ListOpt('peers_list', default=None, help=('List of peers'))
+            cfg.ListOpt('peers_list', default=None, help=('List of peers')),
+            cfg.StrOpt('splitter', default='', help=('Splitter address'))
         ])
+        self.splitter = cfg.CONF.splitter
         for address in cfg.CONF.peers_list:
             self.peers_list.append(
                 (address.split(":")[0], int(address.split(":")[1]))
             )
         print("List of the team:\n{}".format(self.peers_list))
-        self.scrambling_list = dict(
-            zip(self.peers_list, sample(self.peers_list, len(self.peers_list)))
-        )
+        self.scrambling_list = self.scramble(self.peers_list)
         print("Scrambling List:\n{}".format(self.scrambling_list))
+
+    def scramble(self, peers_list):
+        peer_list_random = sample(peers_list, len(peers_list))
+        return OrderedDict(zip(peers_list, peer_list_random))
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
