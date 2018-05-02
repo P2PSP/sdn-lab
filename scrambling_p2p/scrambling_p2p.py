@@ -100,7 +100,16 @@ class ScramblingP2P(app_manager.RyuApp):
 
         if udp_pkt:
             dst_peer = (ip_pkt.dst, udp_pkt.dst_port)
-            if dst_peer in self.scrambling_list:
+
+            if ip_pkt.src == self.splitter:
+                if dst_peer == next(iter(self.scrambling_list)):
+                    self.clean_flows(dp)
+                    self.scrambling_list = self.scramble(self.peers_list)
+                    print("Scrambling List Updated:\n{}"
+                          .format(self.scrambling_list))
+                actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
+
+            elif dst_peer in self.scrambling_list:
                 self.ip_to_mac[ip_pkt.src] = eth_pkt.src
                 self.mac_to_port[eth_pkt.src] = in_port
                 if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
