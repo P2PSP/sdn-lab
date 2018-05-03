@@ -112,6 +112,14 @@ class ScramblingP2P(app_manager.RyuApp):
             elif dst_peer in self.scrambling_list:
                 self.ip_to_mac[ip_pkt.src] = eth_pkt.src
                 self.mac_to_port[eth_pkt.src] = in_port
+
+                myself = (ip_pkt.src, udp_pkt.dst_port)
+                if self.scrambling_list[dst_peer] == myself:
+                    dst_peer = myself
+                    print("*Same origin as destination*")
+                    print("New destination: {}"
+                          .format(self.scrambling_list[myself]))
+
                 if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
                     dst_ip = self.scrambling_list[dst_peer][0]
                     dst_mac = self.ip_to_mac[dst_ip]
