@@ -8,14 +8,31 @@ class DummyS():
     def __init__(self, port, peer_list):
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind(('', self.port))
+        self.sock.settimeout(1)
         self.peer_list = peer_list
+
+    def receive(self):
+        try:
+            msg, address = self.sock.recvfrom(5)
+        except socket.timeout:
+            msg = b'0'
+            address = ()
+        return (msg.decode('utf8'), address)
 
     def send(self, data, address):
         self.sock.sendto(str(data).encode('utf8'), address)
 
     def run(self):
         data = 0
+        _round = 0
         while True:
+            _round += 1
+            print("Round {}".format(_round))
+            msg, address = self.receive()
+            if int(msg) > 0:
+                print("MP detected in round {} by {}".format(msg, address))
+                exit()
             for p in self.peer_list:
                 data += 1
                 self.send(data, p)

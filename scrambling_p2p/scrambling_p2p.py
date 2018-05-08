@@ -24,13 +24,12 @@ class ScramblingP2P(app_manager.RyuApp):
         self.mac_to_port = {}
         cfg.CONF.register_opts([
             cfg.ListOpt('peers_list', default=None, help=('List of peers')),
-            cfg.StrOpt('splitter', default='', help=('Splitter address'))
+            cfg.StrOpt('splitter', default='', help=('Splitter address')),
+            cfg.IntOpt('port', default=12345, help=('UDP port for all'))
         ])
         self.splitter = cfg.CONF.splitter
         for address in cfg.CONF.peers_list:
-            self.peers_list.append(
-                (address.split(":")[0], int(address.split(":")[1]))
-            )
+            self.peers_list.append((address, cfg.CONF.port))
         print("List of the team:\n{}".format(self.peers_list))
         self.scrambling_list = self.scramble(self.peers_list)
         print("Scrambling List:\n{}".format(self.scrambling_list))

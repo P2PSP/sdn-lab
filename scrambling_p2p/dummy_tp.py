@@ -1,30 +1,31 @@
 import socket
 import argparse
+import math
+from dummy_hp import DummyHP
 
 
-class DummyHP():
+class DummyTP(DummyHP):
 
     def __init__(self, port, splitter, peer_list):
-        self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind(('', self.port))
-        self.splitter = splitter
-        self.peer_list = peer_list
+        super().__init__(port, splitter, peer_list)
 
-    def receive(self):
-        data, address = self.sock.recvfrom(5)
-        return (data.decode('utf8'), address)
-
-    def send(self, data, address):
-        self.sock.sendto(str(data).encode('utf8'), address)
+    def attack_detected(self, last_chunk):
+        _round = math.ceil(int(last_chunk) / (len(peer_list) + 1))
+        print("\033[91m Attack! \033[0m in round {}".format(_round))
+        self.send(_round, (self.splitter, self.port))
+        for p in self.peer_list:
+            self.send("-9", p)
+        exit()
 
     def run(self):
+        last_chunk = 0
         while True:
             data, address = self.receive()
             print("{} received from {}".format(data, address))
-            if data == "-9":
-                exit()
+            if data == "0":
+                self.attack_detected(last_chunk)
             if address[0] == self.splitter:
+                last_chunk = data
                 for p in self.peer_list:
                     self.send(data, p)
                     print("\t{} sent to {}".format(data, p))
@@ -50,6 +51,6 @@ if __name__ == "__main__":
 
     print("Local IP {}".format(local_ip_address))
     peer_list.remove((local_ip_address, args.port))
-    print("\nPeer List:{}".format(peer_list))
-    peer = DummyHP(args.port, args.splitter, peer_list)
+    print("Peers List:{}".format(peer_list))
+    peer = DummyTP(args.port, args.splitter, peer_list)
     peer.run()

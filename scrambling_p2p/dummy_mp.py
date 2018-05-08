@@ -13,6 +13,8 @@ class DummyMP(DummyHP):
         while True:
             data, address = self.receive()
             print("{} received from {}".format(data, address))
+            if data == "-9":
+                exit()
             if address[0] == self.splitter:
                 for p in self.peer_list:
                     if p in self.targets:
@@ -49,7 +51,6 @@ if __name__ == "__main__":
     print("Peers List:{}".format(peer_list))
 
     targets = []
-    print("lista", args.targets)
     for p in args.targets:
         targets.append(("10.0.0."+str(p), args.port))
 
