@@ -12,19 +12,20 @@ class DummyHP():
         self.peer_list = peer_list
 
     def receive(self):
-        data, address = self.sock.recvfrom(1)
+        data, address = self.sock.recvfrom(5)
         return (data, address)
 
     def send(self, data, address):
-        self.sock.sendto(data, address)
+        self.sock.sendto(str(data), address)
 
     def run(self):
         while True:
             data, address = self.receive()
-            print("\n{} received from {}".format(data, address))
-            if address == self.splitter:
-                for peer in self.peer_list:
-                    self.send(data, peer)
+            print("{} received from {}".format(data, address))
+            if address[0] == self.splitter:
+                for p in self.peer_list:
+                    self.send(data, p)
+                    print("{} sent to {}".format(data, p))
 
 
 if __name__ == "__main__":
@@ -39,14 +40,14 @@ if __name__ == "__main__":
 
     peer_list = []
     for p in range(1, args.size+1):
-        peer_list.append("10.0.0."+str(p))
+        peer_list.append(("10.0.0."+str(p), args.port))
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect((args.splitter, 1))
     local_ip_address = s.getsockname()[0]
 
     print("Local IP {}".format(local_ip_address))
-    peer_list.remove(local_ip_address)
+    peer_list.remove((local_ip_address, args.port))
     print("\nPeer List:{}".format(peer_list))
     peer = DummyHP(args.port, args.splitter, peer_list)
     peer.run()
