@@ -11,7 +11,7 @@ class DummyS():
         self.peer_list = peer_list
 
     def send(self, data, address):
-        self.sock.sendto(str(data), address)
+        self.sock.sendto(bytes(str(data), 'utf8'), address)
 
     def run(self):
         data = 0

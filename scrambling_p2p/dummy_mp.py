@@ -1,22 +1,13 @@
 import socket
 import argparse
+from dummy_hp import DummyHP
 
 
-class DummyHP():
+class DummyMP(DummyHP):
 
-    def __init__(self, port, splitter, peer_list):
-        self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind(('', self.port))
-        self.splitter = splitter
-        self.peer_list = peer_list
-
-    def receive(self):
-        data, address = self.sock.recvfrom(5)
-        return (data, address)
-
-    def send(self, data, address):
-        self.sock.sendto(data, address)
+    def __init__(self, port, splitter, peer_list, targets):
+        super().__init__(port, splitter, peer_list)
+        self.targets = targets
 
     def run(self):
         while True:
@@ -24,8 +15,12 @@ class DummyHP():
             print("{} received from {}".format(data, address))
             if address[0] == self.splitter:
                 for p in self.peer_list:
-                    self.send(data, p)
-                    print("\t{} sent to {}".format(data, p))
+                    if p in self.targets:
+                        self.send(b'0', p)
+                        print("\t{} sent to {} Attack!".format(b'0', p))
+                    else:
+                        self.send(data, p)
+                        print("\t{} sent to {}".format(data, p))
 
 
 if __name__ == "__main__":
@@ -36,6 +31,8 @@ if __name__ == "__main__":
                         help="Splitter address")
     parser.add_argument("-z", "--size", type=int,
                         help="Team size (without splitter)")
+    parser.add_argument("-t", "--targets", type=int, nargs='+',
+                        help="List of peer to attack (ex. 1 2 4)")
     args = parser.parse_args()
 
     peer_list = []
@@ -48,6 +45,14 @@ if __name__ == "__main__":
 
     print("Local IP {}".format(local_ip_address))
     peer_list.remove((local_ip_address, args.port))
-    print("\nPeer List:{}".format(peer_list))
-    peer = DummyHP(args.port, args.splitter, peer_list)
+    print("Peers List:{}".format(peer_list))
+
+    targets = []
+    print("lista", args.targets)
+    for p in args.targets:
+        targets.append(("10.0.0."+str(p), args.port))
+
+    print("Targets List:{}".format(targets))
+
+    peer = DummyMP(args.port, args.splitter, peer_list, targets)
     peer.run()
