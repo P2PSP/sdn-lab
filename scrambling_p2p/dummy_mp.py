@@ -16,8 +16,9 @@ class DummyMP(DummyHP):
             if address[0] == self.splitter:
                 for p in self.peer_list:
                     if p in self.targets:
-                        self.send(b'0', p)
-                        print("\t{} sent to {} Attack!".format(b'0', p))
+                        self.send(0, p)
+                        print("\t{} sent to {} Attack!".
+                              format(str(0), p))
                     else:
                         self.send(data, p)
                         print("\t{} sent to {}".format(data, p))

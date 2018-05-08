@@ -13,10 +13,10 @@ class DummyHP():
 
     def receive(self):
         data, address = self.sock.recvfrom(5)
-        return (data, address)
+        return (data.decode('utf8'), address)
 
     def send(self, data, address):
-        self.sock.sendto(data, address)
+        self.sock.sendto(str(data).encode('utf8'), address)
 
     def run(self):
         while True:

@@ -11,7 +11,7 @@ class DummyS():
         self.peer_list = peer_list
 
     def send(self, data, address):
-        self.sock.sendto(bytes(str(data), 'utf8'), address)
+        self.sock.sendto(str(data).encode('utf8'), address)
 
     def run(self):
         data = 0
@@ -20,7 +20,7 @@ class DummyS():
                 data += 1
                 self.send(data, p)
                 print("{} sent to {}".format(data, p))
-                time.sleep(2)
+                time.sleep(0.5)
 
 
 if __name__ == "__main__":
