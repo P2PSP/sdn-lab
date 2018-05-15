@@ -22,11 +22,19 @@ class ScramblingP2P(app_manager.RyuApp):
         self.peers_list = []
         self.ip_to_mac = {}
         self.mac_to_port = {}
+        self.rounds_shuffle_counter = 0
+
         cfg.CONF.register_opts([
-            cfg.ListOpt('peers_list', default=None, help=('List of peers')),
-            cfg.StrOpt('splitter', default='', help=('Splitter address')),
-            cfg.IntOpt('port', default=12345, help=('UDP port for all'))
+            cfg.ListOpt('peers_list', default=None,
+                        help=('List of peers')),
+            cfg.StrOpt('splitter', default='',
+                       help=('Splitter address')),
+            cfg.IntOpt('port', default=12345,
+                       help=('UDP port for all')),
+            cfg.IntOpt('rounds_to_shuffle', default=1,
+                       help=('Rounds to shuffle'))
         ])
+        self.rounds_to_shuffle = cfg.CONF.rounds_to_shuffle
         self.splitter = cfg.CONF.splitter
         for address in cfg.CONF.peers_list:
             self.peers_list.append((address, cfg.CONF.port))
@@ -60,11 +68,9 @@ class ScramblingP2P(app_manager.RyuApp):
             mod = parser.OFPFlowMod(datapath=datapath, buffer_id=buffer_id,
                                     priority=priority, match=match,
                                     instructions=inst)
-            print("Flow with no buffer_id")
         else:
             mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     match=match, instructions=inst)
-            print("Flow with no buffer_id")
         datapath.send_msg(mod)
 
     def clean_flows(self, dp):
@@ -102,10 +108,14 @@ class ScramblingP2P(app_manager.RyuApp):
 
             if ip_pkt.src == self.splitter:
                 if dst_peer == next(iter(self.scrambling_list)):
-                    self.clean_flows(dp)
-                    self.scrambling_list = self.scramble(self.peers_list)
-                    print("Scrambling List Updated:\n{}"
-                          .format(self.scrambling_list))
+                    self.rounds_shuffle_counter += 1
+                    if self.rounds_shuffle_counter \
+                       == self.rounds_to_shuffle:
+                        self.rounds_shuffle_counter = 0
+                        self.clean_flows(dp)
+                        self.scrambling_list = self.scramble(self.peers_list)
+                        print("Scrambling List Updated:\n{}"
+                              .format(self.scrambling_list))
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
 
             elif dst_peer in self.scrambling_list:
