@@ -52,6 +52,7 @@ class ScramblingP2P(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
+        self.clean_flows(datapath)
         # install the table-miss flow entry. (OF 1.3+)
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
@@ -125,9 +126,6 @@ class ScramblingP2P(app_manager.RyuApp):
                 myself = (ip_pkt.src, udp_pkt.dst_port)
                 if self.scrambling_list[dst_peer] == myself:
                     dst_peer = myself
-                    print("*Same origin as destination*")
-                    print("New destination: {}"
-                          .format(self.scrambling_list[myself]))
 
                 if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
                     dst_ip = self.scrambling_list[dst_peer][0]
