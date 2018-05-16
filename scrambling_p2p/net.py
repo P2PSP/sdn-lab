@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+from random import randint
 from mininet.log import setLogLevel
 from mininet.net import Mininet
 from mininet.topo import Topo
@@ -38,14 +39,29 @@ def runMinimalTopo(team_size):
     net.start()
 
     for host in net.hosts[:-3]:
-        host.cmd('python3 dummy_hp.py -p 12345 -s 10.0.0.' +
-                 str(hosts) + ' -z 8&')
+        run_hp = "python3 dummy_hp.py -p 12345 -s 10.0.0." \
+                 + str(hosts) + " -z " + str(team_size) + "&"
+        host.cmd(run_hp)
+        print(run_hp)
+    print("HPs running")
 
-    net.hosts[-3].cmd('python3 dummy_tp.py -p 12345 -s 10.0.0.' +
-                      str(hosts) + ' -z 8&')
-    net.hosts[-2].cmd('python3 dummy_mp.py -p 12345 -s 10.0.0.' +
-                      str(hosts) + ' -z 8 -t 5&')
-    results = net.hosts[-1].cmd('python3 dummy_s.py -p 12345 -z 8')
+    run_tp = "python3 -u dummy_tp.py -p 12345 -s 10.0.0." \
+             + str(hosts) + " -z " + str(team_size) + '&'
+    net.hosts[-3].cmd(run_tp)
+    print(run_tp)
+    print("TP running")
+
+    target = randint(1, team_size-1)
+    run_mp = "python3 -u dummy_mp.py -p 12345 -s 10.0.0." \
+             + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
+             + '&'
+    net.hosts[-2].cmd(run_mp)
+    print(run_mp)
+    print("MP running with traget = {}".format(target))
+
+    print("Running splitter...")
+    run_s = "python3 dummy_s.py -p 12345 -z " + str(team_size)
+    results = net.hosts[-1].cmd(run_s)
     print(results)
     # Drop the user in to a CLI so user can run commands.
     # CLI(net)

@@ -15,9 +15,10 @@ rounds_to_shuffle = $rounds_to_shuffle
 EOM
 
 # Run controller
-ryu-manager scrambling_p2p.py --config-file scrambling_p2p.conf & 
+ryu-manager scrambling_p2p.py --config-file scrambling_p2p.conf --log-file controller.out& 
 pid_controller=$!
-sleep 2
+echo "Preparing the simulation..."
+sleep 4
 
 # Run mininet
 sudo ./net.py $team_size

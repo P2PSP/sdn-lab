@@ -25,7 +25,7 @@ class ScramblingP2P(app_manager.RyuApp):
         self.rounds_shuffle_counter = 0
 
         cfg.CONF.register_opts([
-            cfg.IntOpt('team_size', default=None,
+            cfg.IntOpt('team_size', default=8,
                        help=('Size of the team')),
             cfg.IntOpt('port', default=12345,
                        help=('UDP port for all')),
@@ -36,9 +36,9 @@ class ScramblingP2P(app_manager.RyuApp):
         self.splitter = "10.0.0."+str(cfg.CONF.team_size+1)
         for h in range(0, cfg.CONF.team_size):
             self.peers_list.append(("10.0.0."+str(h+1), cfg.CONF.port))
-        print("List of the team:\n{}".format(self.peers_list))
+        self.logger.info("List of the team:\n{}".format(self.peers_list))
         self.scrambling_list = self.scramble(self.peers_list)
-        print("Scrambling List:\n{}".format(self.scrambling_list))
+        self.logger.info("Scrambling List:\n{}".format(self.scrambling_list))
 
     def scramble(self, peers_list):
         peer_list_random = sample(peers_list, len(peers_list))
@@ -113,8 +113,8 @@ class ScramblingP2P(app_manager.RyuApp):
                         self.rounds_shuffle_counter = 0
                         self.clean_flows(dp)
                         self.scrambling_list = self.scramble(self.peers_list)
-                        print("Scrambling List Updated:\n{}"
-                              .format(self.scrambling_list))
+                        self.logger.info("Scrambling List Updated:\n{}"
+                                         .format(self.scrambling_list))
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
 
             elif dst_peer in self.scrambling_list:
