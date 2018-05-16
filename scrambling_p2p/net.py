@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 from mininet.log import setLogLevel
 from mininet.net import Mininet
 from mininet.topo import Topo
@@ -18,11 +19,12 @@ class MinimalTopo(Topo):
             self.addLink(s1, self.addHost('h%s' % (h + 1)))
 
 
-def runMinimalTopo():
+def runMinimalTopo(team_size):
     "Bootstrap a Mininet network using the Minimal Topology"
 
     # Create an instance of our topology
-    topo = MinimalTopo()
+    hosts = team_size + 1
+    topo = MinimalTopo(hosts)
 
     # Create a network based on the topology using OVS and controlled by
     # a remote controller.
@@ -36,10 +38,13 @@ def runMinimalTopo():
     net.start()
 
     for host in net.hosts[:-3]:
-        host.cmd('python3 dummy_hp.py -p 12345 -s 10.0.0.9 -z 8&')
+        host.cmd('python3 dummy_hp.py -p 12345 -s 10.0.0.' +
+                 str(hosts) + ' -z 8&')
 
-    net.hosts[-3].cmd('python3 dummy_tp.py -p 12345 -s 10.0.0.9 -z 8&')
-    net.hosts[-2].cmd('python3 dummy_mp.py -p 12345 -s 10.0.0.9 -z 8 -t 5&')
+    net.hosts[-3].cmd('python3 dummy_tp.py -p 12345 -s 10.0.0.' +
+                      str(hosts) + ' -z 8&')
+    net.hosts[-2].cmd('python3 dummy_mp.py -p 12345 -s 10.0.0.' +
+                      str(hosts) + ' -z 8 -t 5&')
     results = net.hosts[-1].cmd('python3 dummy_s.py -p 12345 -z 8')
     print(results)
     # Drop the user in to a CLI so user can run commands.
@@ -52,7 +57,8 @@ def runMinimalTopo():
 if __name__ == '__main__':
     # This runs if this file is executed directly
     setLogLevel('info')
-    runMinimalTopo()
+    team_size = int(sys.argv[1])
+    runMinimalTopo(team_size)
 
 # Allows the file to be imported using `mn --custom <filename> --topo minimal`
 topos = {
