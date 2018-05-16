@@ -25,19 +25,17 @@ class ScramblingP2P(app_manager.RyuApp):
         self.rounds_shuffle_counter = 0
 
         cfg.CONF.register_opts([
-            cfg.ListOpt('peers_list', default=None,
-                        help=('List of peers')),
-            cfg.StrOpt('splitter', default='',
-                       help=('Splitter address')),
+            cfg.IntOpt('team_size', default=None,
+                       help=('Size of the team')),
             cfg.IntOpt('port', default=12345,
                        help=('UDP port for all')),
             cfg.IntOpt('rounds_to_shuffle', default=1,
                        help=('Rounds to shuffle'))
         ])
         self.rounds_to_shuffle = cfg.CONF.rounds_to_shuffle
-        self.splitter = cfg.CONF.splitter
-        for address in cfg.CONF.peers_list:
-            self.peers_list.append((address, cfg.CONF.port))
+        self.splitter = "10.0.0."+str(cfg.CONF.team_size+1)
+        for h in range(0, cfg.CONF.team_size):
+            self.peers_list.append(("10.0.0."+str(h+1), cfg.CONF.port))
         print("List of the team:\n{}".format(self.peers_list))
         self.scrambling_list = self.scramble(self.peers_list)
         print("Scrambling List:\n{}".format(self.scrambling_list))
