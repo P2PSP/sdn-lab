@@ -19,7 +19,7 @@ $ ryu-manager scrambling_p2p.py --config-file scrambling_p2p.conf
 
 The configuration for this experiment is in the config file `scrambling_p2p.conf`
 Example:
-- team_size = 10
+- team_size = 8
 - port = 12345 
 - rounds_to_shuffle = 1
 
