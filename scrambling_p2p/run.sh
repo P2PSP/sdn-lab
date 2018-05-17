@@ -21,7 +21,7 @@ echo "Preparing the simulation..."
 sleep 4
 
 # Run mininet
-sudo ./net.py $team_size
+sudo ./net.py $team_size $port
 
 # When finish, kill controller
 kill -9 $pid_controller

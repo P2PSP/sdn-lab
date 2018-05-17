@@ -20,7 +20,7 @@ class MinimalTopo(Topo):
             self.addLink(s1, self.addHost('h%s' % (h + 1)))
 
 
-def runMinimalTopo(team_size):
+def runMinimalTopo(team_size, port):
     "Bootstrap a Mininet network using the Minimal Topology"
 
     # Create an instance of our topology
@@ -44,7 +44,7 @@ def runMinimalTopo(team_size):
         do_log = " &"
         if __debug__:
             do_log = " > " + str(id_host) + ".log &"
-        run_hp = "python3 -u dummy_hp.py -p 12345 -s 10.0.0." \
+        run_hp = "python3 -u dummy_hp.py -p " + str(port) + " -s 10.0.0." \
                  + str(hosts) + " -z " + str(team_size) + str(do_log)
         host.cmd(run_hp)
         print(run_hp)
@@ -52,7 +52,7 @@ def runMinimalTopo(team_size):
 
     if __debug__:
         do_log = " > " + str(id_host+1) + ".log &"
-    run_tp = "python3 -u dummy_tp.py -p 12345 -s 10.0.0." \
+    run_tp = "python3 -u dummy_tp.py -p " + str(port) + " -s 10.0.0." \
              + str(hosts) + " -z " + str(team_size) + str(do_log)
     net.hosts[-3].cmd(run_tp)
     print(run_tp)
@@ -61,7 +61,7 @@ def runMinimalTopo(team_size):
     if __debug__:
         do_log = " > " + str(id_host+2) + ".log &"
     target = randint(1, team_size-1)
-    run_mp = "python3 -u dummy_mp.py -p 12345 -s 10.0.0." \
+    run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 10.0.0." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
              + str(do_log)
     net.hosts[-2].cmd(run_mp)
@@ -69,7 +69,7 @@ def runMinimalTopo(team_size):
     print("MP running with traget = {}".format(target))
 
     print("Running splitter...")
-    run_s = "python3 dummy_s.py -p 12345 -z " + str(team_size)
+    run_s = "python3 dummy_s.py -p " + str(port) + " -z " + str(team_size)
     results = net.hosts[-1].cmd(run_s)
     print(results)
     # Drop the user in to a CLI so user can run commands.
@@ -83,7 +83,8 @@ if __name__ == '__main__':
     # This runs if this file is executed directly
     setLogLevel('info')
     team_size = int(sys.argv[1])
-    runMinimalTopo(team_size)
+    port = int(sys.argv[2])
+    runMinimalTopo(team_size, port)
 
 # Allows the file to be imported using `mn --custom <filename> --topo minimal`
 topos = {
