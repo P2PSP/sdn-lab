@@ -15,7 +15,7 @@ rounds_to_shuffle = $rounds_to_shuffle
 EOM
 
 # Run controller
-ryu-manager scrambling_p2p.py --config-file scrambling_p2p.conf --log-file controller.out& 
+ryu-manager scrambling_p2p.py --config-file scrambling_p2p.conf --log-file controller.log& 
 pid_controller=$!
 echo "Preparing the simulation..."
 sleep 4

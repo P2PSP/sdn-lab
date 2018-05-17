@@ -1,6 +1,7 @@
 import socket
 import argparse
 import math
+import time
 from dummy_hp import DummyHP
 
 
@@ -29,6 +30,7 @@ class DummyTP(DummyHP):
                 for p in self.peer_list:
                     self.send(data, p)
                     print("\t{} sent to {}".format(data, p))
+                    time.sleep(0.01)
 
 
 if __name__ == "__main__":

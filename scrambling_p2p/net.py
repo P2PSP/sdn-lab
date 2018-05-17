@@ -38,23 +38,32 @@ def runMinimalTopo(team_size):
     # Actually start the network
     net.start()
 
+    id_host = 0
     for host in net.hosts[:-3]:
-        run_hp = "python3 dummy_hp.py -p 12345 -s 10.0.0." \
-                 + str(hosts) + " -z " + str(team_size) + "&"
+        id_host += 1
+        do_log = " &"
+        if __debug__:
+            do_log = " > " + str(id_host) + ".log &"
+        run_hp = "python3 -u dummy_hp.py -p 12345 -s 10.0.0." \
+                 + str(hosts) + " -z " + str(team_size) + str(do_log)
         host.cmd(run_hp)
         print(run_hp)
     print("HPs running")
 
+    if __debug__:
+        do_log = " > " + str(id_host+1) + ".log &"
     run_tp = "python3 -u dummy_tp.py -p 12345 -s 10.0.0." \
-             + str(hosts) + " -z " + str(team_size) + '&'
+             + str(hosts) + " -z " + str(team_size) + str(do_log)
     net.hosts[-3].cmd(run_tp)
     print(run_tp)
     print("TP running")
 
+    if __debug__:
+        do_log = " > " + str(id_host+2) + ".log &"
     target = randint(1, team_size-1)
     run_mp = "python3 -u dummy_mp.py -p 12345 -s 10.0.0." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
-             + '&'
+             + str(do_log)
     net.hosts[-2].cmd(run_mp)
     print(run_mp)
     print("MP running with traget = {}".format(target))

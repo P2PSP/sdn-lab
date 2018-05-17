@@ -1,5 +1,7 @@
 import socket
 import argparse
+import time
+
 
 class DummyS():
 
@@ -7,7 +9,7 @@ class DummyS():
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('', self.port))
-        self.sock.settimeout(1)
+        self.sock.settimeout(0.2)
         self.peer_list = peer_list
 
     def receive(self):
@@ -36,6 +38,7 @@ class DummyS():
                 data += 1
                 self.send(data, p)
                 print("{} sent to {}".format(data, p))
+                time.sleep(0.05)
 
 
 if __name__ == "__main__":
