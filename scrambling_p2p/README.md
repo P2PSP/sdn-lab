@@ -1,20 +1,29 @@
 # Running an experiment with HPs, a S, an MP and a TP
-## Run Mininet
+
+## Automatic Test
+
+```
+./run.sh [team_size] [port] [rounds_to_shuffle]
+```
+
+## Manual Test
+### Run Mininet
 Run a network with one switch and 9 hosts:
 ```
 $ sudo mn --topo single,9 --mac --switch ovsk --controller remote
 ```
-## Run Ryu App
+### Run Ryu App
 ```
 $ ryu-manager scrambling_p2p.py --config-file scrambling_p2p.conf
 ```
 
 The configuration for this experiment is in the config file `scrambling_p2p.conf`
-- Peers: 10.0.0.1, 10.0.0.0.2, 10.0.0.3, 10.0.0.0.4, 10.0.0.5, 10.0.0.0.6, 10.0.0.7, 10.0.0.0.8
-- Splitter: 10.0.0.9
-- UDP Port: 12345
+Example:
+- team_size = 10
+- port = 12345 
+- rounds_to_shuffle = 1
 
-## Testing that it works properly
+### Testing that it works properly
 
 In mininet console run a HP for peers 1 to 6:
 ```
