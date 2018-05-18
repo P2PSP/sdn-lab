@@ -20,7 +20,7 @@ class MinimalTopo(Topo):
             self.addLink(s1, self.addHost('h%s' % (h + 1)))
 
 
-def runMinimalTopo(team_size, port):
+def runMinimalTopo(team_size, port, target_mode):
     "Bootstrap a Mininet network using the Minimal Topology"
 
     # Create an instance of our topology
@@ -60,7 +60,10 @@ def runMinimalTopo(team_size, port):
 
     if __debug__:
         do_log = " > " + str(id_host+2) + ".log &"
-    target = randint(1, team_size-1)
+    if target_mode == 0:
+        target = randint(1, team_size-1)
+    else:
+        target = 0
     run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 10.0.0." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
              + str(do_log)
@@ -84,7 +87,8 @@ if __name__ == '__main__':
     setLogLevel('info')
     team_size = int(sys.argv[1])
     port = int(sys.argv[2])
-    runMinimalTopo(team_size, port)
+    target_mode = int(sys.argv[3])
+    runMinimalTopo(team_size, port, target_mode)
 
 # Allows the file to be imported using `mn --custom <filename> --topo minimal`
 topos = {

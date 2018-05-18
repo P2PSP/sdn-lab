@@ -1,6 +1,7 @@
 import socket
 import argparse
 import time
+from random import randint
 from dummy_hp import DummyHP
 
 
@@ -9,6 +10,7 @@ class DummyMP(DummyHP):
     def __init__(self, port, splitter, peer_list, targets):
         super().__init__(port, splitter, peer_list)
         self.targets = targets
+        self.port = port
 
     def run(self):
         while True:
@@ -17,8 +19,15 @@ class DummyMP(DummyHP):
             if data == "-9":
                 exit()
             if address[0] == self.splitter:
+                if len(self.targets) == 0:
+                    target = ("10.0.0."+str(randint(1, len(peer_list))),
+                              self.port)
+                    targets = [target]
+                    print("New Target: {}".format(targets[0]))
+                else:
+                    targets = self.targets[:]
                 for p in self.peer_list:
-                    if p in self.targets:
+                    if p in targets:
                         self.send(0, p)
                         print("\t{} sent to {} Attack!".
                               format(str(0), p))
@@ -54,7 +63,8 @@ if __name__ == "__main__":
 
     targets = []
     for p in args.targets:
-        targets.append(("10.0.0."+str(p), args.port))
+        if p != 0:
+            targets.append(("10.0.0."+str(p), args.port))
 
     print("Targets List:{}".format(targets))
 
