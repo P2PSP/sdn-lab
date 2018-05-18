@@ -3,8 +3,9 @@
 ## Automatic Test
 
 ```
-./run.sh [team_size] [port] [rounds_to_shuffle]
+./run.sh [team_size] [port] [rounds_to_shuffle] [target_type]
 ```
+Where `target_type` can be `0` for a fixed target during all session, or `1` for changing target in each round. Both of them are chosen by random.
 
 ## Manual Test
 ### Run Mininet
