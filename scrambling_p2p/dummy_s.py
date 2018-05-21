@@ -31,7 +31,7 @@ class DummyS():
             print("Round {}".format(_round))
             msg, address = self.receive()
             if int(msg) > 0:
-                print("\033[91m MP detected \033[0m in round {} by {}"
+                print("\033[91m MP detected in round {} by {} \033[0m"
                       .format(msg, address))
                 exit()
             for p in self.peer_list:
