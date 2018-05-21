@@ -1,5 +1,11 @@
 # Running an experiment with HPs, a S, an MP and a TP
 
+## Run a set of experiments
+```
+./fxvsvr.sh
+```
+It runs a set of `samples` for a network of 15 peers where a MP attacks the same target during all simulation vs a MP changing the target each round. 
+
 ## Automatic Test
 
 ```
