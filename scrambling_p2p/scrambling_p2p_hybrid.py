@@ -94,6 +94,7 @@ class ScramblingP2P(app_manager.RyuApp):
     def _packet_in_handler(self, ev):
         msg = ev.msg
         dp = msg.datapath
+        dpid = dp.id
         ofp = dp.ofproto
         ofp_parser = dp.ofproto_parser
         pkt = packet.Packet(msg.data)
@@ -101,8 +102,9 @@ class ScramblingP2P(app_manager.RyuApp):
         eth_pkt = pkt.get_protocol(ethernet.ethernet)
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
         udp_pkt = pkt.get_protocol(udp.udp)
+        self.mac_to_port.setdefault(dpid, {})
 
-        if udp_pkt:
+        if udp_pkt and udp_pkt.dst_port == cfg.CONF.port:
             dst_peer = (ip_pkt.dst, udp_pkt.dst_port)
 
             if ip_pkt.src == self.splitter:
@@ -118,8 +120,11 @@ class ScramblingP2P(app_manager.RyuApp):
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
 
             elif dst_peer in self.scrambling_list:
+                print("dst:", dst_peer)
                 self.ip_to_mac[ip_pkt.src] = eth_pkt.src
-                self.mac_to_port[eth_pkt.src] = in_port
+                print("ip2mac:", self.ip_to_mac)
+                self.mac_to_port[dpid][eth_pkt.src] = in_port
+                print("mac2port:", self.mac_to_port)
 
                 myself = (ip_pkt.src, udp_pkt.dst_port)
                 if self.scrambling_list[dst_peer] == myself:
@@ -128,11 +133,12 @@ class ScramblingP2P(app_manager.RyuApp):
                 if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
                     dst_ip = self.scrambling_list[dst_peer][0]
                     dst_mac = self.ip_to_mac[dst_ip]
-                    dst_port = self.mac_to_port[dst_mac]
+                    dst_port = self.mac_to_port[dpid][dst_mac]
                 else:
                     dst_ip = self.scrambling_list[dst_peer][0]
                     dst_mac = 'ff:ff:ff:ff:ff:ff'
                     dst_port = ofp.OFPP_FLOOD
+                    print("Flooded")
 
                 match = dp.ofproto_parser.OFPMatch(
                     in_port=in_port, eth_type=0x800, ipv4_dst=dst_peer[0])

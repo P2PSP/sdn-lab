@@ -6,6 +6,7 @@ from mininet.log import setLogLevel
 from mininet.net import Mininet
 from mininet.topo import Topo
 from mininet.node import RemoteController, OVSSwitch
+from mininet.cli import CLI
 
 
 class MinimalTopo(Topo):
@@ -26,6 +27,9 @@ class MinimalTopo(Topo):
 
         self.addLink(s3, self.addHost('h%s' % (hosts)))
 
+        self.addLink(s1, s2)
+        self.addLink(s2, s3)
+
 
 def runMinimalTopo(team_size, port, target_mode):
     "Bootstrap a Mininet network using the Minimal Topology"
@@ -44,7 +48,7 @@ def runMinimalTopo(team_size, port, target_mode):
 
     # Actually start the network
     net.start()
-
+    '''
     id_host = 0
     for host in net.hosts[:-3]:
         id_host += 1
@@ -80,10 +84,12 @@ def runMinimalTopo(team_size, port, target_mode):
 
     print("Running splitter...")
     run_s = "python3 dummy_s.py -p " + str(port) + " -z " + str(team_size)
+    print(run_s)
     results = net.hosts[-1].cmd(run_s)
     print(results)
+    '''
     # Drop the user in to a CLI so user can run commands.
-    # CLI(net)
+    CLI(net)
 
     # After the user exits the CLI, shutdown the network.
     net.stop()
