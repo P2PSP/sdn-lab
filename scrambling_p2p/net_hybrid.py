@@ -48,7 +48,7 @@ def runMinimalTopo(team_size, port, target_mode):
 
     # Actually start the network
     net.start()
-    '''
+    
     id_host = 0
     for host in net.hosts[:-3]:
         id_host += 1
@@ -87,9 +87,9 @@ def runMinimalTopo(team_size, port, target_mode):
     print(run_s)
     results = net.hosts[-1].cmd(run_s)
     print(results)
-    '''
+    
     # Drop the user in to a CLI so user can run commands.
-    CLI(net)
+    #CLI(net)
 
     # After the user exits the CLI, shutdown the network.
     net.stop()

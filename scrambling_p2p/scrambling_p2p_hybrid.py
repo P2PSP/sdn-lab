@@ -40,6 +40,18 @@ class ScramblingP2P(app_manager.RyuApp):
         self.scrambling_list = self.scramble(self.peers_list)
         self.logger.info("Scrambling List:\n{}".format(self.scrambling_list))
 
+        # List of peers per device (it could be mixed in loop above)
+        self.members = {}
+        self.members[1] = []
+        for h in range(0, cfg.CONF.team_size//2):
+            self.members[1].append(("10.0.0."+str(h+1), cfg.CONF.port))
+        self.members[2] = []
+        for h in range(cfg.CONF.team_size//2, cfg.CONF.team_size):
+            self.members[2].append(("10.0.0."+str(h+1), cfg.CONF.port))
+        self.members[3] = [self.splitter]
+        self.logger.info("List per device:\n{}".format(self.members))
+
+
     def scramble(self, peers_list):
         peer_list_random = sample(peers_list, len(peers_list))
         return OrderedDict(zip(peers_list, peer_list_random))
@@ -120,25 +132,36 @@ class ScramblingP2P(app_manager.RyuApp):
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
 
             elif dst_peer in self.scrambling_list:
-                print("dst:", dst_peer)
                 self.ip_to_mac[ip_pkt.src] = eth_pkt.src
-                print("ip2mac:", self.ip_to_mac)
                 self.mac_to_port[dpid][eth_pkt.src] = in_port
-                print("mac2port:", self.mac_to_port)
-
+                    
                 myself = (ip_pkt.src, udp_pkt.dst_port)
-                if self.scrambling_list[dst_peer] == myself:
-                    dst_peer = myself
-
-                if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
+                if myself in self.members[dpid]:
+                    
+                    if self.scrambling_list[dst_peer] == myself:
+                        dst_peer = myself
+                        
                     dst_ip = self.scrambling_list[dst_peer][0]
-                    dst_mac = self.ip_to_mac[dst_ip]
-                    dst_port = self.mac_to_port[dpid][dst_mac]
+                    if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
+                        dst_mac = self.ip_to_mac[dst_ip]
+                        if dst_mac in self.mac_to_port[dpid]:
+                            dst_port = self.mac_to_port[dpid][dst_mac]
+                        else:
+                            dst_port = ofp.OFPP_FLOOD
+                    else:
+                        dst_mac = 'ff:ff:ff:ff:ff:ff'
+                        dst_port = ofp.OFPP_FLOOD  
                 else:
-                    dst_ip = self.scrambling_list[dst_peer][0]
-                    dst_mac = 'ff:ff:ff:ff:ff:ff'
-                    dst_port = ofp.OFPP_FLOOD
-                    print("Flooded")
+                    dst_ip = dst_peer[0]
+                    if dst_peer[0] in self.ip_to_mac:
+                        dst_mac = self.ip_to_mac[dst_ip]
+                        if dst_mac in self.mac_to_port[dpid]:
+                            dst_port = self.mac_to_port[dpid][dst_mac]
+                        else:
+                            dst_port = ofp.OFPP_FLOOD
+                    else:
+                        dst_mac = 'ff:ff:ff:ff:ff:ff'
+                        dst_port = ofp.OFPP_FLOOD
 
                 match = dp.ofproto_parser.OFPMatch(
                     in_port=in_port, eth_type=0x800, ipv4_dst=dst_peer[0])
