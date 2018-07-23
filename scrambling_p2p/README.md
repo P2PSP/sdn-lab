@@ -4,7 +4,7 @@
 ```
 ./fxvsvr.sh
 ```
-It runs a set of `samples` for a network of 15 peers where a MP attacks the same target during all simulation vs a MP changing the target each round. 
+It runs a set of `samples` for a network from 10 to 100 peers (step of 10) where a MP attacks the same target during all simulation vs a MP changing the target each round. 
 
 ## Automatic Test
 
