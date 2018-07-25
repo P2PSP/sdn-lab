@@ -14,8 +14,12 @@ class DummyTP(DummyHP):
         _round = math.ceil(int(last_chunk) / (len(peer_list) + 1))
         print("\033[91m Attack! \033[0m in round {}".format(_round))
         self.send(_round, (self.splitter, self.port))
+        print("Complaint sent to the splitter")
+        time.sleep(0.01)
         for p in self.peer_list:
+            print("Sending bye to", p)
             self.send("-9", p)
+            time.sleep(0.01)
         exit()
 
     def run(self):
