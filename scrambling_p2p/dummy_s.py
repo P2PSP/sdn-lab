@@ -38,7 +38,7 @@ class DummyS():
                 data += 1
                 self.send(data, p)
                 print("{} sent to {}".format(data, p))
-                time.sleep(0.05)
+                time.sleep(0.1)
 
 
 if __name__ == "__main__":
