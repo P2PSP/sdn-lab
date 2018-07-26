@@ -34,7 +34,6 @@ class DummyMP(DummyHP):
                     else:
                         self.send(data, p)
                         print("\t{} sent to {}".format(data, p))
-                    time.sleep(0.02)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import socket
 import argparse
 import time
+import os
+from threading import Thread
 
 
 class DummyS():
@@ -9,7 +11,6 @@ class DummyS():
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('', self.port))
-        self.sock.settimeout(0.2)
         self.peer_list = peer_list
 
     def receive(self):
@@ -23,22 +24,25 @@ class DummyS():
     def send(self, data, address):
         self.sock.sendto(str(data).encode('utf8'), address)
 
+    def listen_to_the_team(self):
+        print("Listening to the team")
+        msg, address = self.receive()
+        if int(msg) > 0:
+            print("\033[91m MP detected in round {} by {} \033[0m"
+                  .format(msg, address))
+            os._exit(1)
+
     def run(self):
         data = 0
         _round = 0
         while True:
             _round += 1
             print("Round {}".format(_round))
-            msg, address = self.receive()
-            if int(msg) > 0:
-                print("\033[91m MP detected in round {} by {} \033[0m"
-                      .format(msg, address))
-                exit()
             for p in self.peer_list:
                 data += 1
                 self.send(data, p)
                 print("{} sent to {}".format(data, p))
-                time.sleep(0.08)
+                time.sleep(0.002*len(peer_list))
 
 
 if __name__ == "__main__":
@@ -55,4 +59,5 @@ if __name__ == "__main__":
 
     print("\nPeer List:{}".format(peer_list))
     peer = DummyS(args.port, peer_list)
+    Thread(target=peer.listen_to_the_team, args=[]).start()
     peer.run()
