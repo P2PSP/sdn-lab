@@ -1,8 +1,8 @@
 #!/bin/bash
 
-samples=20
+samples=10
 
-for ((t=10; t <= 100; t=t+10))
+for ((t=10; t <= 80; t=t+10))
 do
     
     for (( i=0; i < $samples; ++i ))

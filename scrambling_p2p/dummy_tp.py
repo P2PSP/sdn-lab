@@ -19,7 +19,7 @@ class DummyTP(DummyHP):
         for p in self.peer_list:
             print("Sending bye to", p)
             self.send("-9", p)
-            time.sleep(0.05)
+            time.sleep(0.02)
         exit()
 
     def run(self):
@@ -34,7 +34,7 @@ class DummyTP(DummyHP):
                 for p in self.peer_list:
                     self.send(data, p)
                     print("\t{} sent to {}".format(data, p))
-                    time.sleep(0.05)
+                    time.sleep(0.02)
 
 
 if __name__ == "__main__":
