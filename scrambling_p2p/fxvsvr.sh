@@ -1,6 +1,6 @@
 #!/bin/bash
 
-samples=10
+samples=30
 
 for ((t=10; t <= 100; t=t+10))
 do
