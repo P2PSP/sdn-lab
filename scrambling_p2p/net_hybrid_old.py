@@ -12,12 +12,11 @@ from mininet.cli import CLI
 class MinimalTopo(Topo):
     "Minimal topology with a single switch and two hosts"
 
-    def build(self, hosts=9, extra_peers=0):
+    def build(self, hosts=9):
         # Create a switches
         s1 = self.addSwitch('s1')
         s2 = self.addSwitch('s2')
         s3 = self.addSwitch('s3')
-        s4 = self.addSwitch('s4')
 
         # Create and link hosts.
         for h in range(0, hosts//2):
@@ -28,28 +27,21 @@ class MinimalTopo(Topo):
 
         self.addLink(s3, self.addHost('h%s' % (hosts)))
 
-        for h in range(hosts, hosts+extra_peers):
-            self.addLink(s4, self.addHost('h%s' % (h + 1)))
-
         self.addLink(s1, s2)
         self.addLink(s2, s3)
-        #self.addLink(s1, s4)
-        #self.addLink(s2, s4)
-        #self.addLink(s3, s4)
 
 
-def runMinimalTopo(team_size, port, target_mode, extra_peers):
+def runMinimalTopo(team_size, port, target_mode):
     "Bootstrap a Mininet network using the Minimal Topology"
 
     # Create an instance of our topology
     hosts = team_size + 1
-    topo = MinimalTopo(hosts, extra_peers)
+    topo = MinimalTopo(hosts)
 
     # Create a network based on the topology using OVS and controlled by
     # a remote controller.
     net = Mininet(
         topo=topo,
-        #controller=None,
         controller=lambda name: RemoteController(name, ip='127.0.0.1'),
         switch=OVSSwitch,
         autoSetMacs=True)
@@ -109,8 +101,7 @@ if __name__ == '__main__':
     team_size = int(sys.argv[1])
     port = int(sys.argv[2])
     target_mode = int(sys.argv[3])
-    extra_peers = int(sys.argv[4])
-    runMinimalTopo(team_size, port, target_mode, extra_peers)
+    runMinimalTopo(team_size, port, target_mode)
 
 # Allows the file to be imported using `mn --custom <filename> --topo minimal`
 topos = {

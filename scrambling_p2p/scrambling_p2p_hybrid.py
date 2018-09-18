@@ -51,7 +51,6 @@ class ScramblingP2P(app_manager.RyuApp):
         self.members[3] = [self.splitter]
         self.logger.info("List per device:\n{}".format(self.members))
 
-
     def scramble(self, peers_list):
         peer_list_random = sample(peers_list, len(peers_list))
         return OrderedDict(zip(peers_list, peer_list_random))
@@ -134,13 +133,13 @@ class ScramblingP2P(app_manager.RyuApp):
             elif dst_peer in self.scrambling_list:
                 self.ip_to_mac[ip_pkt.src] = eth_pkt.src
                 self.mac_to_port[dpid][eth_pkt.src] = in_port
-                    
+
                 myself = (ip_pkt.src, udp_pkt.dst_port)
                 if myself in self.members[dpid]:
-                    
+
                     if self.scrambling_list[dst_peer] == myself:
                         dst_peer = myself
-                        
+
                     dst_ip = self.scrambling_list[dst_peer][0]
                     if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
                         dst_mac = self.ip_to_mac[dst_ip]
@@ -150,7 +149,7 @@ class ScramblingP2P(app_manager.RyuApp):
                             dst_port = ofp.OFPP_FLOOD
                     else:
                         dst_mac = 'ff:ff:ff:ff:ff:ff'
-                        dst_port = ofp.OFPP_FLOOD  
+                        dst_port = ofp.OFPP_FLOOD
                 else:
                     dst_ip = dst_peer[0]
                     if dst_peer[0] in self.ip_to_mac:
