@@ -2,54 +2,79 @@
 
 import sys
 from random import randint
-from mininet.log import setLogLevel
+from mininet.log import setLogLevel, info
 from mininet.net import Mininet
 from mininet.topo import Topo
 from mininet.node import RemoteController, OVSSwitch
+from mininet.node import Node
 from mininet.cli import CLI
 
 
-class MinimalTopo(Topo):
-    "Minimal topology with a single switch and two hosts"
+class LinuxRouter(Node):
+    "A Node with IP forwarding enabled."
+
+    def config(self, **params):
+        super(LinuxRouter, self).config(**params)
+        # Enable forwarding on the router
+        self.cmd('sysctl net.ipv4.ip_forward=1')
+
+    def terminate(self):
+        self.cmd('sysctl net.ipv4.ip_forward=0')
+        super(LinuxRouter, self).terminate()
+
+class NetworkTopo(Topo):
 
     def build(self, hosts=9, extra_peers=0):
+
+        # Create Router
+        defaultIP = '192.168.1.254/24'  # IP address for r0-eth1
+        router = self.addNode('r0', cls=LinuxRouter, ip=defaultIP)
+
         # Create a switches
         s1 = self.addSwitch('s1')
         s2 = self.addSwitch('s2')
         s3 = self.addSwitch('s3')
-        s4 = self.addSwitch('s4')
+
+        # Create router links
+        self.addLink(s1, router, intfName2='r0-eth1',
+                     params2={'ip': defaultIP})
+        self.addLink(s2, router, intfName2='r0-eth2',
+                     params2={'ip': '10.0.0.254/8'})
+        self.addLink(s3, router, intfName2='r0-eth3',
+                     params2={'ip': '11.0.0.254/8'})
 
         # Create and link hosts.
         for h in range(0, hosts//2):
-            self.addLink(s1, self.addHost('h%s' % (h + 1)))
+            self.addLink(self.addHost('h%s' % (h+1),
+                                      ip='10.0.0.%s/24' % (h+1),
+                                      defaultRoute='via 10.0.0.254'), s2)
 
         for h in range(hosts//2, hosts-1):
-            self.addLink(s2, self.addHost('h%s' % (h + 1)))
+            self.addLink(self.addHost('h%s' % (h+1),
+                                      ip='11.0.0.%s/24' % (h+1),
+                                      defaultRoute='via 11.0.0.254'), s3)
 
-        self.addLink(s3, self.addHost('h%s' % (hosts)))
+        self.addLink(self.addHost('h%s' % (hosts),
+                                  ip='192.168.1.%s/24' % (hosts),
+                                  defaultRoute='via 192.168.1.254'), s1)
 
         for h in range(hosts, hosts+extra_peers):
-            self.addLink(s4, self.addHost('h%s' % (h + 1)))
-
-        self.addLink(s1, s2)
-        self.addLink(s2, s3)
-        #self.addLink(s1, s4)
-        #self.addLink(s2, s4)
-        #self.addLink(s3, s4)
+            self.addLink(self.addHost('h%s' % (h+1),
+                                      ip='192.168.1.%s/24' % (h+1),
+                                      defaultRoute='via 192.168.1.254'), s1)
 
 
-def runMinimalTopo(team_size, port, target_mode, extra_peers):
+def runNetworkTopo(team_size, port, target_mode, extra_peers):
     "Bootstrap a Mininet network using the Minimal Topology"
 
     # Create an instance of our topology
     hosts = team_size + 1
-    topo = MinimalTopo(hosts, extra_peers)
+    topo = NetworkTopo(hosts, extra_peers)
 
     # Create a network based on the topology using OVS and controlled by
     # a remote controller.
     net = Mininet(
         topo=topo,
-        #controller=None,
         controller=lambda name: RemoteController(name, ip='127.0.0.1'),
         switch=OVSSwitch,
         autoSetMacs=True)
@@ -110,9 +135,9 @@ if __name__ == '__main__':
     port = int(sys.argv[2])
     target_mode = int(sys.argv[3])
     extra_peers = int(sys.argv[4])
-    runMinimalTopo(team_size, port, target_mode, extra_peers)
+    runNetworkTopo(team_size, port, target_mode, extra_peers)
 
 # Allows the file to be imported using `mn --custom <filename> --topo minimal`
 topos = {
-    'min': MinimalTopo
+    'min': NetworkTopo
 }

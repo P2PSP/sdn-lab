@@ -33,22 +33,23 @@ class ScramblingP2P(app_manager.RyuApp):
                        help=('Rounds to shuffle'))
         ])
         self.rounds_to_shuffle = cfg.CONF.rounds_to_shuffle
-        self.splitter = "10.0.0."+str(cfg.CONF.team_size+1)
-        for h in range(0, cfg.CONF.team_size):
-            self.peers_list.append(("10.0.0."+str(h+1), cfg.CONF.port))
-        self.logger.info("List of the team:\n{}".format(self.peers_list))
-        self.scrambling_list = self.scramble(self.peers_list)
-        self.logger.info("Scrambling List:\n{}".format(self.scrambling_list))
+        self.splitter = "192.168.1."+str(cfg.CONF.team_size+1)
 
-        # List of peers per device (it could be mixed in loop above)
         self.members = {}
         self.members[1] = []
-        for h in range(0, cfg.CONF.team_size//2):
+        hosts = cfg.CONF.team_size +1
+        for h in range(0, hosts//2):
+            self.peers_list.append(("10.0.0."+str(h+1), cfg.CONF.port))
             self.members[1].append(("10.0.0."+str(h+1), cfg.CONF.port))
         self.members[2] = []
-        for h in range(cfg.CONF.team_size//2, cfg.CONF.team_size):
-            self.members[2].append(("10.0.0."+str(h+1), cfg.CONF.port))
+        for h in range(hosts//2, hosts-1):
+            self.peers_list.append(("11.0.0."+str(h+1), cfg.CONF.port))
+            self.members[2].append(("11.0.0."+str(h+1), cfg.CONF.port))
         self.members[3] = [self.splitter]
+        
+        self.logger.info("List of the team:\n{}".format(self.peers_list))
+        self.scrambling_list = self.scramble(self.peers_list)
+        self.logger.info("Scrambling List:\n{}".format(self.scrambling_list))        
         self.logger.info("List per device:\n{}".format(self.members))
 
     def scramble(self, peers_list):
