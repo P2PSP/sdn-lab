@@ -36,16 +36,16 @@ class ScramblingP2P(app_manager.RyuApp):
         self.splitter = "192.168.1."+str(cfg.CONF.team_size+1)
 
         self.members = {}
-        self.members[1] = []
+        self.members[1] = [self.splitter]
+        self.members[2] = []
         hosts = cfg.CONF.team_size + 1
         for h in range(0, hosts//2):
             self.peers_list.append(("10.0.0."+str(h+1), cfg.CONF.port))
-            self.members[1].append(("10.0.0."+str(h+1), cfg.CONF.port))
-        self.members[2] = []
+            self.members[2].append(("10.0.0."+str(h+1), cfg.CONF.port))
+        self.members[3] = []
         for h in range(hosts//2, hosts-1):
             self.peers_list.append(("11.0.0."+str(h+1), cfg.CONF.port))
-            self.members[2].append(("11.0.0."+str(h+1), cfg.CONF.port))
-        self.members[3] = [self.splitter]
+            self.members[3].append(("11.0.0."+str(h+1), cfg.CONF.port))
         
         self.logger.info("List of the team:\n{}".format(self.peers_list))
         self.scrambling_list = self.scramble(self.peers_list)
@@ -118,6 +118,7 @@ class ScramblingP2P(app_manager.RyuApp):
 
         if udp_pkt and udp_pkt.dst_port == cfg.CONF.port:
             dst_peer = (ip_pkt.dst, udp_pkt.dst_port)
+            print("Original packet", "dst_mac", eth_pkt.dst, "dst_ip", ip_pkt.dst)
 
             if ip_pkt.src == self.splitter:
                 if dst_peer == next(iter(self.scrambling_list)):
@@ -130,18 +131,24 @@ class ScramblingP2P(app_manager.RyuApp):
                         self.logger.info("Scrambling List Updated:\n{}"
                                          .format(self.scrambling_list))
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
-
+            
             elif dst_peer in self.scrambling_list:
                 self.ip_to_mac[ip_pkt.src] = eth_pkt.src
                 self.mac_to_port[dpid][eth_pkt.src] = in_port
-
+                
+                print("IP_TO_MAC", self.ip_to_mac)
+                print("__________________")
+                print("MAC_TO_PORT", self.mac_to_port)
+                
                 myself = (ip_pkt.src, udp_pkt.dst_port)
+                print(myself, " in ", dpid,"?")
                 if myself in self.members[dpid]:
-
+                    print("yes")
                     if self.scrambling_list[dst_peer] == myself:
                         dst_peer = myself
-
+                    
                     dst_ip = self.scrambling_list[dst_peer][0]
+                    
                     if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
                         dst_mac = self.ip_to_mac[dst_ip]
                         if dst_mac in self.mac_to_port[dpid]:
@@ -153,6 +160,7 @@ class ScramblingP2P(app_manager.RyuApp):
                         dst_port = ofp.OFPP_FLOOD
                 else:
                     dst_ip = dst_peer[0]
+                    print("no")
                     if dst_peer[0] in self.ip_to_mac:
                         dst_mac = self.ip_to_mac[dst_ip]
                         if dst_mac in self.mac_to_port[dpid]:
@@ -163,6 +171,8 @@ class ScramblingP2P(app_manager.RyuApp):
                         dst_mac = 'ff:ff:ff:ff:ff:ff'
                         dst_port = ofp.OFPP_FLOOD
 
+                print("dst_mac", dst_mac, "dst_port", dst_port,
+                      "dst_ip", dst_ip)
                 match = dp.ofproto_parser.OFPMatch(
                     in_port=in_port, eth_type=0x800, ipv4_dst=dst_peer[0])
                 # 0x800 => IPv4 type.
@@ -173,7 +183,6 @@ class ScramblingP2P(app_manager.RyuApp):
                 actions.append(ofp_parser.OFPActionOutput(port=dst_port))
                 if msg.buffer_id != ofp.OFP_NO_BUFFER:
                     self.add_flow(dp, 1, match, actions, msg.buffer_id)
-                    return
                 else:
                     self.add_flow(dp, 1, match, actions)
             else:
