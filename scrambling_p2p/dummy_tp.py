@@ -42,7 +42,8 @@ if __name__ == "__main__":
                         help="Splitter address")
     parser.add_argument("-z", "--size", type=int,
                         help="Team size (without splitter)")
-    parser.add_argument("--split", type=bool, default=False,
+    parser.add_argument("--split", default=False,
+                        action='store_true',
                         help="Distribute the team in 2 switches")
     args = parser.parse_args()
 

@@ -37,7 +37,7 @@ class ScramblingP2P(app_manager.RyuApp):
 
         self.members = {}
         self.members[1] = []
-        hosts = cfg.CONF.team_size +1
+        hosts = cfg.CONF.team_size + 1
         for h in range(0, hosts//2):
             self.peers_list.append(("10.0.0."+str(h+1), cfg.CONF.port))
             self.members[1].append(("10.0.0."+str(h+1), cfg.CONF.port))
