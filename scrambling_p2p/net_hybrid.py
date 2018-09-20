@@ -37,7 +37,7 @@ class NetworkTopo(Topo):
 
         # Create router links
         self.addLink(s1, router, intfName2='r0-eth1',
-                     params2={'ip': defaultIP})
+                     params2={'ip': defaultIP})e
         self.addLink(s2, router, intfName2='r0-eth2',
                      params2={'ip': '10.0.0.254/8'})
         self.addLink(s3, router, intfName2='r0-eth3',
