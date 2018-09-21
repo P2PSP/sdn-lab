@@ -16,6 +16,7 @@ class LinuxRouter(Node):
     def config(self, **params):
         super(LinuxRouter, self).config(**params)
         # Enable forwarding on the router
+        self.setMAC("01:00:00:00:00:00", "r0-eth1")
         self.cmd('sysctl net.ipv4.ip_forward=1')
 
     def terminate(self):
@@ -37,7 +38,7 @@ class NetworkTopo(Topo):
 
         # Create router links
         self.addLink(s1, router, intfName2='r0-eth1',
-                     params2={'ip': defaultIP})e
+                     params2={'ip': defaultIP})
         self.addLink(s2, router, intfName2='r0-eth2',
                      params2={'ip': '10.0.0.254/8'})
         self.addLink(s3, router, intfName2='r0-eth3',
@@ -70,7 +71,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     # Create an instance of our topology
     hosts = team_size + 1
     topo = NetworkTopo(hosts, extra_peers)
-
+    
     # Create a network based on the topology using OVS and controlled by
     # a remote controller.
     net = Mininet(
@@ -81,6 +82,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
 
     # Actually start the network
     net.start()
+    net.getNodeByName('r0').setMAC('01:00:00:00:00:02', 'r0-eth2')
     '''
     id_host = 0
     for host in net.hosts[:-3]:
