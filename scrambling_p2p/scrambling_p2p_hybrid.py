@@ -115,12 +115,15 @@ class ScramblingP2P(app_manager.RyuApp):
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
         udp_pkt = pkt.get_protocol(udp.udp)
         self.mac_to_port.setdefault(dpid, {})
+        self.ip_to_mac.setdefault(dpid, {})
 
         if udp_pkt and udp_pkt.dst_port == cfg.CONF.port:
+            print("DEVICE number", dpid)
             dst_peer = (ip_pkt.dst, udp_pkt.dst_port)
             print("Original packet", "dst_mac", eth_pkt.dst, "dst_ip", ip_pkt.dst)
-
             if ip_pkt.src == self.splitter:
+                self.ip_to_mac[dpid][ip_pkt.src] = eth_pkt.src
+                self.mac_to_port[dpid][eth_pkt.src] = in_port
                 if dst_peer == next(iter(self.scrambling_list)):
                     self.rounds_shuffle_counter += 1
                     if self.rounds_shuffle_counter \
@@ -131,9 +134,8 @@ class ScramblingP2P(app_manager.RyuApp):
                         self.logger.info("Scrambling List Updated:\n{}"
                                          .format(self.scrambling_list))
                 actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
-            
             elif dst_peer in self.scrambling_list:
-                self.ip_to_mac[ip_pkt.src] = eth_pkt.src
+                self.ip_to_mac[dpid][ip_pkt.src] = eth_pkt.src
                 self.mac_to_port[dpid][eth_pkt.src] = in_port
                 
                 print("IP_TO_MAC", self.ip_to_mac)
@@ -141,28 +143,19 @@ class ScramblingP2P(app_manager.RyuApp):
                 print("MAC_TO_PORT", self.mac_to_port)
                 
                 myself = (ip_pkt.src, udp_pkt.dst_port)
-                print(myself, " in ", dpid,"?")
-                if myself in self.members[dpid]:
-                    print("yes")
-                    if self.scrambling_list[dst_peer] == myself:
-                        dst_peer = myself
-                    
+                if self.scrambling_list[dst_peer] == myself:
+                    dst_peer = myself
+
+                print("origen", (ip_pkt.src, udp_pkt.src_port), "dpid", dpid, "lista", self.members[dpid])
+                if (ip_pkt.src, udp_pkt.dst_port) in self.members[dpid]:
                     dst_ip = self.scrambling_list[dst_peer][0]
-                    
-                    if self.scrambling_list[dst_peer][0] in self.ip_to_mac:
-                        dst_mac = self.ip_to_mac[dst_ip]
-                        if dst_mac in self.mac_to_port[dpid]:
-                            dst_port = self.mac_to_port[dpid][dst_mac]
-                        else:
-                            dst_port = ofp.OFPP_FLOOD
-                    else:
-                        dst_mac = 'ff:ff:ff:ff:ff:ff'
-                        dst_port = ofp.OFPP_FLOOD
                 else:
                     dst_ip = dst_peer[0]
-                    print("no")
-                    if dst_peer[0] in self.ip_to_mac:
-                        dst_mac = self.ip_to_mac[dst_ip]
+
+                print("destino", (dst_ip, udp_pkt.dst_port), "dpid", dpid, "lista", self.members[dpid])
+                if (dst_ip, udp_pkt.dst_port) in self.members[dpid]:
+                    if self.scrambling_list[dst_peer][0] in self.ip_to_mac[dpid]:
+                        dst_mac = self.ip_to_mac[dpid][dst_ip]
                         if dst_mac in self.mac_to_port[dpid]:
                             dst_port = self.mac_to_port[dpid][dst_mac]
                         else:
@@ -170,8 +163,16 @@ class ScramblingP2P(app_manager.RyuApp):
                     else:
                         dst_mac = 'ff:ff:ff:ff:ff:ff'
                         dst_port = ofp.OFPP_FLOOD
+                    print("yes")
+                else:
+                    if self.splitter in self.ip_to_mac[dpid]:
+                        dst_mac = self.ip_to_mac[dpid][self.splitter]
+                    else:
+                        dst_mac = self.ip_to_mac[dpid][dst_ip]
+                    dst_port = self.mac_to_port[dpid][dst_mac]
+                    print("no")
 
-                print("dst_mac", dst_mac, "dst_port", dst_port,
+                print("Sending to: dst_mac", dst_mac, "dst_port", dst_port,
                       "dst_ip", dst_ip)
                 match = dp.ofproto_parser.OFPMatch(
                     in_port=in_port, eth_type=0x800, ipv4_dst=dst_peer[0])

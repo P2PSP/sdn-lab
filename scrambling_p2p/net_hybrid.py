@@ -16,12 +16,12 @@ class LinuxRouter(Node):
     def config(self, **params):
         super(LinuxRouter, self).config(**params)
         # Enable forwarding on the router
-        self.setMAC("01:00:00:00:00:00", "r0-eth1")
         self.cmd('sysctl net.ipv4.ip_forward=1')
 
     def terminate(self):
         self.cmd('sysctl net.ipv4.ip_forward=0')
         super(LinuxRouter, self).terminate()
+
 
 class NetworkTopo(Topo):
 
@@ -43,7 +43,7 @@ class NetworkTopo(Topo):
                      params2={'ip': '10.0.0.254/8'})
         self.addLink(s3, router, intfName2='r0-eth3',
                      params2={'ip': '11.0.0.254/8'})
-
+        
         # Create and link hosts.
         for h in range(0, hosts//2):
             self.addLink(self.addHost('h%s' % (h+1),
@@ -82,7 +82,6 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
 
     # Actually start the network
     net.start()
-    net.getNodeByName('r0').setMAC('01:00:00:00:00:02', 'r0-eth2')
     '''
     id_host = 0
     for host in net.hosts[:-3]:
