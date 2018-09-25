@@ -11,6 +11,7 @@ from ryu.lib.packet import udp
 from ryu import cfg
 from random import sample
 from collections import OrderedDict
+import hashlib
 
 
 class ScramblingP2P(app_manager.RyuApp):
@@ -46,7 +47,9 @@ class ScramblingP2P(app_manager.RyuApp):
         for h in range(hosts//2, hosts-1):
             self.peers_list.append(("11.0.0."+str(h+1), cfg.CONF.port))
             self.members[3].append(("11.0.0."+str(h+1), cfg.CONF.port))
-        
+
+        self.packet_log = []
+            
         self.logger.info("List of the team:\n{}".format(self.peers_list))
         self.scrambling_list = self.scramble(self.peers_list)
         self.logger.info("Scrambling List:\n{}".format(self.scrambling_list))        
@@ -147,11 +150,21 @@ class ScramblingP2P(app_manager.RyuApp):
                     dst_peer = myself
 
                 print("origen", (ip_pkt.src, udp_pkt.src_port), "dpid", dpid, "lista", self.members[dpid])
+                '''
                 if (ip_pkt.src, udp_pkt.dst_port) in self.members[dpid]:
                     dst_ip = self.scrambling_list[dst_peer][0]
                 else:
                     dst_ip = dst_peer[0]
-
+                '''
+                hash_object = msg.buffer_id
+                print("hash", hash_object)
+                print("MSG", msg.data)
+                if hash_object in self.packet_log:
+                    dst_ip = dst_peer[0]
+                else:
+                    dst_ip = self.scrambling_list[dst_peer][0]
+                    self.packet_log.append(hash_object)
+                
                 print("destino", (dst_ip, udp_pkt.dst_port), "dpid", dpid, "lista", self.members[dpid])
                 if (dst_ip, udp_pkt.dst_port) in self.members[dpid]:
                     if self.scrambling_list[dst_peer][0] in self.ip_to_mac[dpid]:
