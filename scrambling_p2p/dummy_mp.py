@@ -7,10 +7,11 @@ from dummy_hp import DummyHP
 
 class DummyMP(DummyHP):
 
-    def __init__(self, port, splitter, peer_list, targets):
+    def __init__(self, port, splitter, peer_list, targets, split):
         super().__init__(port, splitter, peer_list)
         self.targets = targets
         self.port = port
+        self.split = split
 
     def run(self):
         while True:
@@ -20,8 +21,14 @@ class DummyMP(DummyHP):
                 exit()
             if address[0] == self.splitter:
                 if len(self.targets) == 0:
-                    target = ("10.0.0."+str(randint(1, len(peer_list))),
-                              self.port)
+                    p = randint(1, len(peer_list))
+                    if args.split:
+                        if p <= hosts//2:
+                            target = ("10.0.0."+str(p), self.port)
+                        else:
+                            target = ("11.0.0."+str(p), self.port)
+                    else:
+                        target = ("10.0.0."+str(p), self.port)
                     targets = [target]
                     print("New Target: {}".format(targets[0]))
                 else:
@@ -83,5 +90,5 @@ if __name__ == "__main__":
 
     print("Targets List:{}".format(targets))
 
-    peer = DummyMP(args.port, args.splitter, peer_list, targets)
+    peer = DummyMP(args.port, args.splitter, peer_list, targets, args.split)
     peer.run()
