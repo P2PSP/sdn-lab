@@ -11,7 +11,6 @@ from ryu.lib.packet import udp
 from ryu import cfg
 from random import sample
 from collections import OrderedDict
-import hashlib
 
 
 class ScramblingP2P(app_manager.RyuApp):
@@ -156,14 +155,13 @@ class ScramblingP2P(app_manager.RyuApp):
                 else:
                     dst_ip = dst_peer[0]
                 '''
-                hash_object = msg.buffer_id
-                print("hash", hash_object)
-                print("MSG", msg.data)
-                if hash_object in self.packet_log:
+                pkt_id = ip_pkt.identification
+                print("pkt_id", pkt_id)
+                if pkt_id in self.packet_log:
                     dst_ip = dst_peer[0]
                 else:
                     dst_ip = self.scrambling_list[dst_peer][0]
-                    self.packet_log.append(hash_object)
+                    self.packet_log.append(pkt_id)
                 
                 print("destino", (dst_ip, udp_pkt.dst_port), "dpid", dpid, "lista", self.members[dpid])
                 if (dst_ip, udp_pkt.dst_port) in self.members[dpid]:

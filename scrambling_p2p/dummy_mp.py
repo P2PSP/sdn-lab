@@ -73,7 +73,13 @@ if __name__ == "__main__":
     targets = []
     for p in args.targets:
         if p != 0:
-            targets.append(("10.0.0."+str(p), args.port))
+            if args.split:
+                if p <= hosts//2:
+                    targets.append(("10.0.0."+str(p), args.port))
+                else:
+                    targets.append(("11.0.0."+str(p), args.port))
+            else:
+                targets.append(("10.0.0."+str(p), args.port))
 
     print("Targets List:{}".format(targets))
 
