@@ -163,9 +163,11 @@ class ScramblingP2P(app_manager.RyuApp):
                     dst_ip = self.scrambling_list[dst_peer][0]
                     self.packet_log.append(pkt_id)
                 
-                print("destino", (dst_ip, udp_pkt.dst_port), "dpid", dpid, "lista", self.members[dpid])
+                print("destino", (dst_ip, udp_pkt.dst_port), "dpid",
+                      dpid, "lista", self.members[dpid])
                 if (dst_ip, udp_pkt.dst_port) in self.members[dpid]:
-                    if self.scrambling_list[dst_peer][0] in self.ip_to_mac[dpid]:
+                    if self.scrambling_list[dst_peer][0] \
+                       in self.ip_to_mac[dpid]:
                         dst_mac = self.ip_to_mac[dpid][dst_ip]
                         if dst_mac in self.mac_to_port[dpid]:
                             dst_port = self.mac_to_port[dpid][dst_mac]
