@@ -43,7 +43,7 @@ class DummyS():
                 data += 1
                 self.send(data, p)
                 print("{} sent to {}".format(data, p))
-                time.sleep(0.002*len(peer_list))
+                time.sleep(0.004*len(peer_list))
                 #time.sleep(2)
 
 
