@@ -9,6 +9,7 @@ class DummyTP(DummyHP):
 
     def __init__(self, port, splitter, peer_list):
         super().__init__(port, splitter, peer_list)
+        print("I'm a DummyTP")
 
     def attack_detected(self, last_chunk):
         _round = math.ceil(int(last_chunk) / (len(peer_list) + 1))

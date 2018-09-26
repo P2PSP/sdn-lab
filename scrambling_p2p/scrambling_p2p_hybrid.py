@@ -9,6 +9,7 @@ from ryu.lib.packet import ethernet
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import udp
 from ryu import cfg
+from ryu.app.ofctl import api
 from random import sample
 from collections import OrderedDict
 
@@ -64,7 +65,7 @@ class ScramblingP2P(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        self.clean_flows(datapath)
+        self.clean_flows()
         # install the table-miss flow entry. (OF 1.3+)
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
@@ -86,23 +87,25 @@ class ScramblingP2P(app_manager.RyuApp):
                                     match=match, instructions=inst)
         datapath.send_msg(mod)
 
-    def clean_flows(self, dp):
-        ofp = dp.ofproto
-        parser = dp.ofproto_parser
-        match = parser.OFPMatch()
-        # Delete all flows
-        instructions = []
-        flow_mod = parser.OFPFlowMod(
-            dp, 0, 0, 0,
-            ofp.OFPFC_DELETE, 0, 0,
-            1, ofp.OFPCML_NO_BUFFER,
-            ofp.OFPP_ANY, OFPG_ANY, 0,
-            match, instructions)
-        dp.send_msg(flow_mod)
-        # Install the table-miss flow entry
-        actions = [parser.OFPActionOutput(ofp.OFPP_CONTROLLER,
-                                          ofp.OFPCML_NO_BUFFER)]
-        self.add_flow(dp, 0, match, actions)
+    def clean_flows(self):
+        dps = api.get_datapath(self)
+        for dp in dps:
+            ofp = dp.ofproto
+            parser = dp.ofproto_parser
+            match = parser.OFPMatch()
+            # Delete all flows
+            instructions = []
+            flow_mod = parser.OFPFlowMod(
+                dp, 0, 0, 0,
+                ofp.OFPFC_DELETE, 0, 0,
+                1, ofp.OFPCML_NO_BUFFER,
+                ofp.OFPP_ANY, OFPG_ANY, 0,
+                match, instructions)
+            dp.send_msg(flow_mod)
+            # Install the table-miss flow entry
+            actions = [parser.OFPActionOutput(ofp.OFPP_CONTROLLER,
+                                              ofp.OFPCML_NO_BUFFER)]
+            self.add_flow(dp, 0, match, actions)
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -131,7 +134,7 @@ class ScramblingP2P(app_manager.RyuApp):
                     if self.rounds_shuffle_counter \
                        == self.rounds_to_shuffle:
                         self.rounds_shuffle_counter = 0
-                        self.clean_flows(dp)
+                        self.clean_flows()
                         self.scrambling_list = self.scramble(self.peers_list)
                         self.logger.info("Scrambling List Updated:\n{}"
                                          .format(self.scrambling_list))
@@ -143,19 +146,21 @@ class ScramblingP2P(app_manager.RyuApp):
                 print("IP_TO_MAC", self.ip_to_mac)
                 print("__________________")
                 print("MAC_TO_PORT", self.mac_to_port)
-                
+
+                pkt_id = ip_pkt.identification
+
                 myself = (ip_pkt.src, udp_pkt.dst_port)
-                if self.scrambling_list[dst_peer] == myself:
+                if pkt_id not in self.packet_log and self.scrambling_list[dst_peer] == myself:
                     dst_peer = myself
 
                 print("origen", (ip_pkt.src, udp_pkt.src_port), "dpid", dpid, "lista", self.members[dpid])
+                print("destino original", dst_peer, "dpid", dpid, "lista", self.members[dpid])
                 '''
                 if (ip_pkt.src, udp_pkt.dst_port) in self.members[dpid]:
                     dst_ip = self.scrambling_list[dst_peer][0]
                 else:
                     dst_ip = dst_peer[0]
                 '''
-                pkt_id = ip_pkt.identification
                 print("pkt_id", pkt_id)
                 if pkt_id in self.packet_log:
                     dst_ip = dst_peer[0]
@@ -165,9 +170,9 @@ class ScramblingP2P(app_manager.RyuApp):
                 
                 print("destino", (dst_ip, udp_pkt.dst_port), "dpid",
                       dpid, "lista", self.members[dpid])
+                print("Scrambling List", self.scrambling_list)
                 if (dst_ip, udp_pkt.dst_port) in self.members[dpid]:
-                    if self.scrambling_list[dst_peer][0] \
-                       in self.ip_to_mac[dpid]:
+                    if dst_ip in self.ip_to_mac[dpid]:
                         dst_mac = self.ip_to_mac[dpid][dst_ip]
                         if dst_mac in self.mac_to_port[dpid]:
                             dst_port = self.mac_to_port[dpid][dst_mac]

@@ -12,6 +12,7 @@ class DummyMP(DummyHP):
         self.targets = targets
         self.port = port
         self.split = split
+        print("I'm a DummyMP")
 
     def run(self):
         while True:

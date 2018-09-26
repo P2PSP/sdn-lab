@@ -83,11 +83,11 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     # Actually start the network
     net.start()
     print("IP splitter", net.hosts[hosts-1].IP())
-    print(net.hosts[hosts-1].cmd("ping -c1 10.0.0.1"))
-    print(net.hosts[hosts-1].cmd("ping -c1 11.0.0.{}".format(hosts-1)))
-
+    print(net.hosts[hosts-1].cmd("echo -n 0 | nc -u -w 1 10.0.0.1 12345"))
+    print(net.hosts[hosts-1].cmd("echo -n 0 | nc -u -w 1 11.0.0.{} 12345".format(hosts-1)))
+    
     id_host = 0
-    for host in net.hosts[:-3]:
+    for host in net.hosts[0:-4]:
         id_host += 1
         do_log = " &"
         if __debug__:
@@ -96,15 +96,15 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
                  " -s 192.168.1." + str(hosts) + " -z " \
                  + str(team_size) + " --split" + str(do_log)
         host.cmd(run_hp)
-        print(run_hp)
+        print(host, ":", run_hp)
     print("HPs running")
 
     if __debug__:
         do_log = " > " + str(id_host+1) + ".log &"
     run_tp = "python3 -u dummy_tp.py -p " + str(port) + " -s 192.168.1." \
              + str(hosts) + " -z " + str(team_size) + " --split" + str(do_log)
-    net.hosts[-3].cmd(run_tp)
-    print(run_tp)
+    net.hosts[-4].cmd(run_tp)
+    print(net.hosts[-4], ":", run_tp)
     print("TP running")
 
     if __debug__:
@@ -116,17 +116,17 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 192.168.1." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
              + " --split" + str(do_log)
-    net.hosts[-2].cmd(run_mp)
-    print(run_mp)
+    net.hosts[-3].cmd(run_mp)
+    print(net.hosts[-3], ":", run_mp)
     print("MP running with traget = {}".format(target))
 
     print("Running splitter...")
-    run_s = "python3 dummy_s.py -p " + str(port) + " -z " + str(team_size) \
+    run_s = "python3 -u dummy_s.py -p " + str(port) + " -z " + str(team_size) \
             + " --split"
-    print(run_s)
-    results = net.hosts[-1].cmd(run_s)
+    print(net.hosts[-2], ":", run_s)
+    results = net.hosts[-2].cmd(run_s)
     print(results)
-
+    
     # Drop the user in to a CLI so user can run commands.
     #CLI(net)
 

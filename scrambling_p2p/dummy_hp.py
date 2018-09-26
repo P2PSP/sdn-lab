@@ -11,6 +11,7 @@ class DummyHP():
         self.sock.bind(('', self.port))
         self.splitter = splitter
         self.peer_list = peer_list
+        print("I'm a DummyHP")
 
     def receive(self):
         data, address = self.sock.recvfrom(5)

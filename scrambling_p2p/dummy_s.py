@@ -12,6 +12,7 @@ class DummyS():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('', self.port))
         self.peer_list = peer_list
+        print("I'm a DummyS")
 
     def receive(self):
         try:
@@ -43,6 +44,7 @@ class DummyS():
                 self.send(data, p)
                 print("{} sent to {}".format(data, p))
                 time.sleep(0.002*len(peer_list))
+                #time.sleep(2)
 
 
 if __name__ == "__main__":
