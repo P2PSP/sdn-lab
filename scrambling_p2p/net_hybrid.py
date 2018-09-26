@@ -82,7 +82,10 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
 
     # Actually start the network
     net.start()
-    
+    print("IP splitter", net.hosts[hosts-1].IP())
+    print(net.hosts[hosts-1].cmd("ping -c1 10.0.0.1"))
+    print(net.hosts[hosts-1].cmd("ping -c1 11.0.0.{}".format(hosts-1)))
+
     id_host = 0
     for host in net.hosts[:-3]:
         id_host += 1
@@ -90,8 +93,8 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
         if __debug__:
             do_log = " > " + str(id_host) + ".log &"
         run_hp = "python3 -u dummy_hp.py -p " + str(port) + \
-                 " -s 192.168.1." + "--split" + str(hosts) + " -z " \
-                 + str(team_size) + str(do_log)
+                 " -s 192.168.1." + str(hosts) + " -z " \
+                 + str(team_size) + " --split" + str(do_log)
         host.cmd(run_hp)
         print(run_hp)
     print("HPs running")
@@ -99,7 +102,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     if __debug__:
         do_log = " > " + str(id_host+1) + ".log &"
     run_tp = "python3 -u dummy_tp.py -p " + str(port) + " -s 192.168.1." \
-             + "--split" + str(hosts) + " -z " + str(team_size) + str(do_log)
+             + str(hosts) + " -z " + str(team_size) + " --split" + str(do_log)
     net.hosts[-3].cmd(run_tp)
     print(run_tp)
     print("TP running")
@@ -112,7 +115,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
         target = 0
     run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 192.168.1." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
-             + "--split" + str(do_log)
+             + " --split" + str(do_log)
     net.hosts[-2].cmd(run_mp)
     print(run_mp)
     print("MP running with traget = {}".format(target))
@@ -123,7 +126,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     print(run_s)
     results = net.hosts[-1].cmd(run_s)
     print(results)
-    
+
     # Drop the user in to a CLI so user can run commands.
     #CLI(net)
 
