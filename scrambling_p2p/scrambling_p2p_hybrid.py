@@ -106,6 +106,7 @@ class ScramblingP2P(app_manager.RyuApp):
             actions = [parser.OFPActionOutput(ofp.OFPP_CONTROLLER,
                                               ofp.OFPCML_NO_BUFFER)]
             self.add_flow(dp, 0, match, actions)
+        self.packet_log.clear()
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
