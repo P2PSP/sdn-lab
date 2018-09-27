@@ -106,7 +106,7 @@ class ScramblingP2P(app_manager.RyuApp):
             actions = [parser.OFPActionOutput(ofp.OFPP_CONTROLLER,
                                               ofp.OFPCML_NO_BUFFER)]
             self.add_flow(dp, 0, match, actions)
-        self.packet_log.clear()
+        del self.packet_log[:]
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -143,35 +143,39 @@ class ScramblingP2P(app_manager.RyuApp):
             elif dst_peer in self.scrambling_list:
                 self.ip_to_mac[dpid][ip_pkt.src] = eth_pkt.src
                 self.mac_to_port[dpid][eth_pkt.src] = in_port
-                
+                '''
                 print("IP_TO_MAC", self.ip_to_mac)
                 print("__________________")
                 print("MAC_TO_PORT", self.mac_to_port)
-
-                pkt_id = ip_pkt.identification
+                '''
+                pkt_id = (ip_pkt.identification, ip_pkt.src)
 
                 myself = (ip_pkt.src, udp_pkt.dst_port)
                 if pkt_id not in self.packet_log and self.scrambling_list[dst_peer] == myself:
                     dst_peer = myself
 
-                print("origen", (ip_pkt.src, udp_pkt.src_port), "dpid", dpid, "lista", self.members[dpid])
-                print("destino original", dst_peer, "dpid", dpid, "lista", self.members[dpid])
+                self.logger.info("Origen:{} dpid: {} lista:\n{}".format(
+                    (ip_pkt.src, udp_pkt.src_port), dpid, self.members[dpid]))
+                self.logger.info("Destino original: {} dpid:{} lista:\n{}".format(
+                    dst_peer, dpid, self.members[dpid]))
                 '''
                 if (ip_pkt.src, udp_pkt.dst_port) in self.members[dpid]:
                     dst_ip = self.scrambling_list[dst_peer][0]
                 else:
                     dst_ip = dst_peer[0]
                 '''
-                print("pkt_id", pkt_id)
+                self.logger.info("pkt_id:{}".format(pkt_id))
                 if pkt_id in self.packet_log:
                     dst_ip = dst_peer[0]
                 else:
                     dst_ip = self.scrambling_list[dst_peer][0]
                     self.packet_log.append(pkt_id)
                 
-                print("destino", (dst_ip, udp_pkt.dst_port), "dpid",
-                      dpid, "lista", self.members[dpid])
-                print("Scrambling List", self.scrambling_list)
+                self.logger.info("Destino: {} dpid: {} lista:\n{}".format(
+                    (dst_ip, udp_pkt.dst_port), dpid, self.members[dpid]))
+                self.logger.info("Scrambling List:\n{}".format(
+                    self.scrambling_list))
+
                 if (dst_ip, udp_pkt.dst_port) in self.members[dpid]:
                     if dst_ip in self.ip_to_mac[dpid]:
                         dst_mac = self.ip_to_mac[dpid][dst_ip]
@@ -191,8 +195,10 @@ class ScramblingP2P(app_manager.RyuApp):
                     dst_port = self.mac_to_port[dpid][dst_mac]
                     print("no")
 
-                print("Sending to: dst_mac", dst_mac, "dst_port", dst_port,
-                      "dst_ip", dst_ip)
+                self.logger.info(
+                    "Sending to: dst_mac {} dst_port {} dst_ip {}".format(
+                        dst_mac, dst_port, dst_ip))
+
                 match = dp.ofproto_parser.OFPMatch(
                     in_port=in_port, eth_type=0x800, ipv4_dst=dst_peer[0])
                 # 0x800 => IPv4 type.

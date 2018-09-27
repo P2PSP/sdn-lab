@@ -124,12 +124,12 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     run_s = "python3 -u dummy_s.py -p " + str(port) + " -z " + str(team_size) \
             + " --split"
     print(net.hosts[-2], ":", run_s)
-    '''
+    
     results = net.hosts[-2].cmd(run_s)
     print(results)
-    '''
+    
     # Drop the user in to a CLI so user can run commands.
-    CLI(net)
+    #CLI(net)
 
     # After the user exits the CLI, shutdown the network.
     net.stop()

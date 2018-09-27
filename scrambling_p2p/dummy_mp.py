@@ -1,6 +1,5 @@
 import socket
 import argparse
-import time
 from random import randint
 from dummy_hp import DummyHP
 
@@ -42,7 +41,6 @@ class DummyMP(DummyHP):
                     else:
                         self.send(data, p)
                         print("\t{} sent to {}".format(data, p))
-                    time.sleep(0.005)
 
 
 if __name__ == "__main__":

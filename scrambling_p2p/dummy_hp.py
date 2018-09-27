@@ -1,7 +1,5 @@
 import socket
 import argparse
-import time
-
 
 class DummyHP():
 
@@ -30,7 +28,6 @@ class DummyHP():
                 for p in self.peer_list:
                     self.send(data, p)
                     print("\t{} sent to {}".format(data, p))
-                    time.sleep(0.005)
 
 
 if __name__ == "__main__":
@@ -55,7 +52,7 @@ if __name__ == "__main__":
             peer_list.append(("11.0.0."+str(p+1), args.port))
     else:
         for p in range(0, hosts-1):
-            peer_list.append(("10.0.0."+str(p+1), args.port))  
+            peer_list.append(("10.0.0."+str(p+1), args.port))
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect((args.splitter, 1))
