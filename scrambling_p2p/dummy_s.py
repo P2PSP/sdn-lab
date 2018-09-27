@@ -43,9 +43,7 @@ class DummyS():
                 data += 1
                 self.send(data, p)
                 print("{} sent to {}".format(data, p))
-                time.sleep(0.004*len(peer_list))
-                #time.sleep(2)
-
+                time.sleep(0.1*len(peer_list))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

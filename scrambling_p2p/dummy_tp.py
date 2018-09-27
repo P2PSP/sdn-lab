@@ -33,6 +33,7 @@ class DummyTP(DummyHP):
                 for p in self.peer_list:
                     self.send(data, p)
                     print("\t{} sent to {}".format(data, p))
+                    time.sleep(0.005)
 
 
 if __name__ == "__main__":

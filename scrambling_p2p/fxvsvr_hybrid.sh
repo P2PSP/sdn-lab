@@ -2,7 +2,7 @@
 
 samples=2
 
-for ((t=10; t <= 50; t=t+10))
+for ((t=20; t <= 20; t=t+10))
 do
     
     for (( i=0; i < $samples; ++i ))

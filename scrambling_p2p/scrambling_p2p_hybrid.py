@@ -34,7 +34,7 @@ class ScramblingP2P(app_manager.RyuApp):
                        help=('Rounds to shuffle'))
         ])
         self.rounds_to_shuffle = cfg.CONF.rounds_to_shuffle
-        self.splitter = "192.168.1."+str(cfg.CONF.team_size+1)
+        self.splitter = "172.31.31."+str(cfg.CONF.team_size+1)
 
         self.members = {}
         self.members[1] = [self.splitter]
@@ -49,10 +49,10 @@ class ScramblingP2P(app_manager.RyuApp):
             self.members[3].append(("11.0.0."+str(h+1), cfg.CONF.port))
 
         self.packet_log = []
-            
+
         self.logger.info("List of the team:\n{}".format(self.peers_list))
         self.scrambling_list = self.scramble(self.peers_list)
-        self.logger.info("Scrambling List:\n{}".format(self.scrambling_list))        
+        self.logger.info("Scrambling List:\n{}".format(self.scrambling_list))
         self.logger.info("List per device:\n{}".format(self.members))
 
     def scramble(self, peers_list):

@@ -28,7 +28,7 @@ class NetworkTopo(Topo):
     def build(self, hosts=9, extra_peers=0):
 
         # Create Router
-        defaultIP = '192.168.1.254/24'  # IP address for r0-eth1
+        defaultIP = '172.31.31.254/24'  # IP address for r0-eth1
         router = self.addNode('r0', cls=LinuxRouter, ip=defaultIP)
 
         # Create a switches
@@ -56,13 +56,13 @@ class NetworkTopo(Topo):
                                       defaultRoute='via 11.0.0.254'), s3)
 
         self.addLink(self.addHost('h%s' % (hosts),
-                                  ip='192.168.1.%s/24' % (hosts),
-                                  defaultRoute='via 192.168.1.254'), s1)
+                                  ip='172.31.31.%s/24' % (hosts),
+                                  defaultRoute='via 172.31.31.254'), s1)
 
         for h in range(hosts, hosts+extra_peers):
             self.addLink(self.addHost('h%s' % (h+1),
-                                      ip='192.168.1.%s/24' % (h+1),
-                                      defaultRoute='via 192.168.1.254'), s1)
+                                      ip='172.31.31.%s/24' % (h+1),
+                                      defaultRoute='via 172.31.31.254'), s1)
 
 
 def runNetworkTopo(team_size, port, target_mode, extra_peers):
@@ -83,8 +83,8 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     # Actually start the network
     net.start()
     print("IP splitter", net.hosts[hosts-1].IP())
-    print(net.hosts[hosts-1].cmd("echo -n 0 | nc -u -w 1 10.0.0.1 12345"))
-    print(net.hosts[hosts-1].cmd("echo -n 0 | nc -u -w 1 11.0.0.{} 12345".format(hosts-1)))
+    print(net.hosts[hosts-1].cmd("echo -n a | nc -u -w 1 10.0.0.1 12345"))
+    print(net.hosts[hosts-1].cmd("echo -n a | nc -u -w 1 11.0.0.{} 12345".format(hosts-1)))
     
     id_host = 0
     for host in net.hosts[0:-4]:
@@ -93,7 +93,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
         if __debug__:
             do_log = " > " + str(id_host) + ".log &"
         run_hp = "python3 -u dummy_hp.py -p " + str(port) + \
-                 " -s 192.168.1." + str(hosts) + " -z " \
+                 " -s 172.31.31." + str(hosts) + " -z " \
                  + str(team_size) + " --split" + str(do_log)
         host.cmd(run_hp)
         print(host, ":", run_hp)
@@ -101,7 +101,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
 
     if __debug__:
         do_log = " > " + str(id_host+1) + ".log &"
-    run_tp = "python3 -u dummy_tp.py -p " + str(port) + " -s 192.168.1." \
+    run_tp = "python3 -u dummy_tp.py -p " + str(port) + " -s 172.31.31." \
              + str(hosts) + " -z " + str(team_size) + " --split" + str(do_log)
     net.hosts[-4].cmd(run_tp)
     print(net.hosts[-4], ":", run_tp)
@@ -113,7 +113,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
         target = randint(1, team_size-1)
     else:
         target = 0
-    run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 192.168.1." \
+    run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 172.31.31." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
              + " --split" + str(do_log)
     net.hosts[-3].cmd(run_mp)
@@ -124,11 +124,12 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     run_s = "python3 -u dummy_s.py -p " + str(port) + " -z " + str(team_size) \
             + " --split"
     print(net.hosts[-2], ":", run_s)
+    '''
     results = net.hosts[-2].cmd(run_s)
     print(results)
-    
+    '''
     # Drop the user in to a CLI so user can run commands.
-    #CLI(net)
+    CLI(net)
 
     # After the user exits the CLI, shutdown the network.
     net.stop()
