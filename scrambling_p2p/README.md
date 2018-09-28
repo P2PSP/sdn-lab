@@ -4,14 +4,22 @@
 ```
 ./fxvsvr.sh
 ```
-It runs a set of `samples` for a network from 10 to 100 peers (step of 10) where a MP attacks the same target during all simulation vs a MP changing the target each round. 
+OR
+```
+./fxvsvr_hybrid.sh
+```
+It runs a set of `samples` for a network from 10 to 100 peers (step of 10) where a MP attacks the same target during all simulation vs a MP changing the target each round. For a totally SDN topology or for a hybrid one. 
 
 ## Automatic Test
 
 ```
 ./run.sh [team_size] [port] [rounds_to_shuffle] [target_type]
 ```
-Where `target_type` can be `0` for a fixed target during all session, or `1` for changing target in each round. Both of them are chosen by random.
+OR
+```
+./run_hybrid.sh [team_size] [port] [rounds_to_shuffle] [target_type] [extra_peers]
+```
+Where `target_type` can be `0` for a fixed target during all session, or `1` for changing target in each round. Both of them are chosen by random. `extra_peers` is the number of peers which are not running in a managed network.
 
 ## Manual Test
 ### Run Mininet
