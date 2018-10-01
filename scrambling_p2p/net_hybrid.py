@@ -87,7 +87,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     print(net.hosts[hosts-1].cmd("echo -n a | nc -u -w 1 11.0.0.{} 12345".format(hosts-1)))
     
     id_host = 0
-    for host in net.hosts[0:-4]:
+    for host in net.hosts[0:- (4 + extra_peers)]:
         id_host += 1
         do_log = " &"
         if __debug__:
@@ -103,8 +103,8 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
         do_log = " > " + str(id_host+1) + ".log &"
     run_tp = "python3 -u dummy_tp.py -p " + str(port) + " -s 172.31.31." \
              + str(hosts) + " -z " + str(team_size) + " --split" + str(do_log)
-    net.hosts[-4].cmd(run_tp)
-    print(net.hosts[-4], ":", run_tp)
+    net.hosts[- (4 + extra_peers)].cmd(run_tp)
+    print(net.hosts[- (4 + extra_peers)], ":", run_tp)
     print("TP running")
 
     if __debug__:
@@ -116,20 +116,20 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 172.31.31." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
              + " --split" + str(do_log)
-    net.hosts[-3].cmd(run_mp)
-    print(net.hosts[-3], ":", run_mp)
+    net.hosts[- (3 + extra_peers)].cmd(run_mp)
+    print(net.hosts[- (3 + extra_peers)], ":", run_mp)
     print("MP running with traget = {}".format(target))
 
     print("Running splitter...")
     run_s = "python3 -u dummy_s.py -p " + str(port) + " -z " + str(team_size) \
             + " --split"
-    print(net.hosts[-2], ":", run_s)
+    print(net.hosts[- (2 + extra_peers)], ":", run_s)
     
-    results = net.hosts[-2].cmd(run_s)
-    print(results)
+    #results = net.hosts[- (2 + extra_peers)].cmd(run_s)
+    #print(results)
     
     # Drop the user in to a CLI so user can run commands.
-    #CLI(net)
+    CLI(net)
 
     # After the user exits the CLI, shutdown the network.
     net.stop()

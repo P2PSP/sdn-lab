@@ -14,6 +14,7 @@ cat <<EOM >./scrambling_p2p_hybrid.conf
 team_size = $team_size
 port = $port
 rounds_to_shuffle = $rounds_to_shuffle
+extra_peers = $extra_peers
 EOM
 
 # Run controller

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-samples=2
+samples=1
 
-for ((t=50; t <= 50; t=t+10))
+for ((t=5; t <= 5; t=t+10))
 do
     
     for (( i=0; i < $samples; ++i ))
     do
-	./run_hybrid.sh $t 12345 1 0 0 | grep -Eo 'MP detected in round [0-9]{1,}' | grep -Eo '[0-9]{1,}' >> fixed_hybrid_$t.out
+	./run_hybrid.sh $t 12345 1 0 2 | grep -Eo 'MP detected in round [0-9]{1,}' | grep -Eo '[0-9]{1,}' >> fixed_hybrid_$t.out
     done
 
     #cat fixed_$t.out | sort | uniq -c > fixed_count_$t.dat
@@ -16,7 +16,7 @@ do
 
     for (( i=0; i < $samples; ++i ))
     do
-	./run.sh $t 12345 1 1 0 | grep -Eo 'MP detected in round [0-9]{1,}' | grep -Eo '[0-9]{1,}' >> var_hybrid_$t.out
+	./run.sh $t 12345 1 1 2 | grep -Eo 'MP detected in round [0-9]{1,}' | grep -Eo '[0-9]{1,}' >> var_hybrid_$t.out
     done
 
     #cat var_$t.out | sort | uniq -c > var_count_$t.dat

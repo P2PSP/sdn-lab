@@ -31,7 +31,9 @@ class ScramblingP2P(app_manager.RyuApp):
             cfg.IntOpt('port', default=12345,
                        help=('UDP port for all')),
             cfg.IntOpt('rounds_to_shuffle', default=1,
-                       help=('Rounds to shuffle'))
+                       help=('Rounds to shuffle')),
+            cfg.IntOpt('extra_peers', default=0,
+                       help=('Peers out of the SDN'))
         ])
         self.rounds_to_shuffle = cfg.CONF.rounds_to_shuffle
         self.splitter = "172.31.31."+str(cfg.CONF.team_size+1)
@@ -48,6 +50,10 @@ class ScramblingP2P(app_manager.RyuApp):
             self.peers_list.append(("11.0.0."+str(h+1), cfg.CONF.port))
             self.members[3].append(("11.0.0."+str(h+1), cfg.CONF.port))
 
+        for h in range(hosts, hosts+cfg.CONF.extra_peers):
+            self.peers_list.append(("172.31.31."+str(h+1), cfg.CONF.port))
+            self.members[1].append(("172.31.31."+str(h+1), cfg.CONF.port))
+            
         self.packet_log = []
 
         self.logger.info("List of the team:\n{}".format(self.peers_list))
@@ -151,7 +157,9 @@ class ScramblingP2P(app_manager.RyuApp):
                 pkt_id = (ip_pkt.identification, ip_pkt.src)
 
                 myself = (ip_pkt.src, udp_pkt.dst_port)
-                if pkt_id not in self.packet_log and self.scrambling_list[dst_peer] == myself:
+                if pkt_id not in self.packet_log \
+                   and dpid != 1 \
+                   and self.scrambling_list[dst_peer] == myself:
                     dst_peer = myself
 
                 self.logger.info("Origen:{} dpid: {} lista:\n{}".format(
@@ -165,12 +173,12 @@ class ScramblingP2P(app_manager.RyuApp):
                     dst_ip = dst_peer[0]
                 '''
                 self.logger.info("pkt_id:{}".format(pkt_id))
-                if pkt_id in self.packet_log:
+                if pkt_id in self.packet_log or dpid == 1:
                     dst_ip = dst_peer[0]
                 else:
                     dst_ip = self.scrambling_list[dst_peer][0]
                     self.packet_log.append(pkt_id)
-                
+
                 self.logger.info("Destino: {} dpid: {} lista:\n{}".format(
                     (dst_ip, udp_pkt.dst_port), dpid, self.members[dpid]))
                 self.logger.info("Scrambling List:\n{}".format(
@@ -188,11 +196,15 @@ class ScramblingP2P(app_manager.RyuApp):
                         dst_port = ofp.OFPP_FLOOD
                     print("yes")
                 else:
-                    if self.splitter in self.ip_to_mac[dpid]:
-                        dst_mac = self.ip_to_mac[dpid][self.splitter]
+                    if dpid == 1:
+                        dst_mac = '00:00:00:00:00:08'
+                        dst_port = 1
                     else:
-                        dst_mac = self.ip_to_mac[dpid][dst_ip]
-                    dst_port = self.mac_to_port[dpid][dst_mac]
+                        if self.splitter in self.ip_to_mac[dpid]:
+                            dst_mac = self.ip_to_mac[dpid][self.splitter]
+                        else:
+                            dst_mac = self.ip_to_mac[dpid][dst_ip]
+                        dst_port = self.mac_to_port[dpid][dst_mac]
                     print("no")
 
                 self.logger.info(
