@@ -94,35 +94,55 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
             do_log = " > " + str(id_host) + ".log &"
         run_hp = "python3 -u dummy_hp.py -p " + str(port) + \
                  " -s 172.31.31." + str(hosts) + " -z " \
-                 + str(team_size) + " --split" + str(do_log)
+                 + str(team_size) + " -e " + str(extra_peers) \
+                 + " --split" + str(do_log)
         host.cmd(run_hp)
         print(host, ":", run_hp)
     print("HPs running")
 
     if __debug__:
-        do_log = " > " + str(id_host+1) + ".log &"
+        id_host += 1
+        do_log = " > " + str(id_host) + ".log &"
     run_tp = "python3 -u dummy_tp.py -p " + str(port) + " -s 172.31.31." \
-             + str(hosts) + " -z " + str(team_size) + " --split" + str(do_log)
+             + str(hosts) + " -z " + str(team_size) + " -e " \
+             + str(extra_peers) + " --split" + str(do_log)
     net.hosts[- (4 + extra_peers)].cmd(run_tp)
     print(net.hosts[- (4 + extra_peers)], ":", run_tp)
     print("TP running")
 
     if __debug__:
-        do_log = " > " + str(id_host+2) + ".log &"
+        id_host += 1
+        do_log = " > " + str(id_host) + ".log &"
     if target_mode == 0:
         target = randint(1, team_size-1)
     else:
         target = 0
     run_mp = "python3 -u dummy_mp.py -p " + str(port) + " -s 172.31.31." \
              + str(hosts) + " -z " + str(team_size) + " -t " + str(target) \
+             + " -e " + str(extra_peers) + " -e " + str(extra_peers) \
              + " --split" + str(do_log)
     net.hosts[- (3 + extra_peers)].cmd(run_mp)
     print(net.hosts[- (3 + extra_peers)], ":", run_mp)
     print("MP running with traget = {}".format(target))
-
+    
+    # Extra peers (peers out of the SDN)
+    id_host += 1  # splitter id
+    for host in net.hosts[- (1 + extra_peers): (hosts + extra_peers)]:
+        id_host += 1
+        do_log = " &"
+        if __debug__:
+            do_log = " > " + str(id_host) + ".log &"
+        run_hp = "python3 -u dummy_hp.py -p " + str(port) + \
+                 " -s 172.31.31." + str(hosts) + " -z " \
+                 + str(team_size) + " -e " + str(extra_peers) \
+                 + " --split" + str(do_log)
+        host.cmd(run_hp)
+        print(host, ":", run_hp)
+    print("HPs running in extra peers")
+    
     print("Running splitter...")
     run_s = "python3 -u dummy_s.py -p " + str(port) + " -z " + str(team_size) \
-            + " --split"
+            + " -e " + str(extra_peers) + " --split"
     print(net.hosts[- (2 + extra_peers)], ":", run_s)
     
     #results = net.hosts[- (2 + extra_peers)].cmd(run_s)

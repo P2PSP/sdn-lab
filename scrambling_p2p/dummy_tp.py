@@ -42,6 +42,8 @@ if __name__ == "__main__":
                         help="Splitter address")
     parser.add_argument("-z", "--size", type=int,
                         help="Team size (without splitter)")
+    parser.add_argument("-e", "--extra_peers", default=0, type=int,
+                        help="Peers out of the SDN")
     parser.add_argument("--split", default=False,
                         action='store_true',
                         help="Distribute the team in 2 switches")
@@ -54,6 +56,8 @@ if __name__ == "__main__":
             peer_list.append(("10.0.0."+str(p+1), args.port))
         for p in range(hosts//2, hosts-1):
             peer_list.append(("11.0.0."+str(p+1), args.port))
+        for p in range(hosts, hosts + args.extra_peers):
+            peer_list.append(("172.31.31."+str(p+1), args.port))
     else:
         for p in range(0, hosts-1):
             peer_list.append(("10.0.0."+str(p+1), args.port))
