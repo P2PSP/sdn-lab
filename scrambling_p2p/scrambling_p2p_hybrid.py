@@ -51,9 +51,9 @@ class ScramblingP2P(app_manager.RyuApp):
             self.members[3].append(("11.0.0."+str(h+1), cfg.CONF.port))
 
         for h in range(hosts, hosts+cfg.CONF.extra_peers):
-            self.peers_list.append(("172.31.31."+str(h+1), cfg.CONF.port))
+            # self.peers_list.append(("172.31.31."+str(h+1), cfg.CONF.port))
             self.members[1].append(("172.31.31."+str(h+1), cfg.CONF.port))
-            
+
         self.packet_log = []
 
         self.logger.info("List of the team:\n{}".format(self.peers_list))

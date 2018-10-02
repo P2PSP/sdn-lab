@@ -71,7 +71,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     # Create an instance of our topology
     hosts = team_size + 1
     topo = NetworkTopo(hosts, extra_peers)
-    
+
     # Create a network based on the topology using OVS and controlled by
     # a remote controller.
     net = Mininet(
@@ -85,7 +85,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     print("IP splitter", net.hosts[hosts-1].IP())
     print(net.hosts[hosts-1].cmd("echo -n a | nc -u -w 1 10.0.0.1 12345"))
     print(net.hosts[hosts-1].cmd("echo -n a | nc -u -w 1 11.0.0.{} 12345".format(hosts-1)))
-    
+
     id_host = 0
     for host in net.hosts[0:- (4 + extra_peers)]:
         id_host += 1
@@ -124,7 +124,7 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
     net.hosts[- (3 + extra_peers)].cmd(run_mp)
     print(net.hosts[- (3 + extra_peers)], ":", run_mp)
     print("MP running with traget = {}".format(target))
-    
+
     # Extra peers (peers out of the SDN)
     id_host += 1  # splitter id
     for host in net.hosts[- (1 + extra_peers): (hosts + extra_peers)]:
@@ -139,17 +139,17 @@ def runNetworkTopo(team_size, port, target_mode, extra_peers):
         host.cmd(run_hp)
         print(host, ":", run_hp)
     print("HPs running in extra peers")
-    
+
     print("Running splitter...")
     run_s = "python3 -u dummy_s.py -p " + str(port) + " -z " + str(team_size) \
             + " -e " + str(extra_peers) + " --split"
     print(net.hosts[- (2 + extra_peers)], ":", run_s)
-    
-    #results = net.hosts[- (2 + extra_peers)].cmd(run_s)
-    #print(results)
-    
+
+    results = net.hosts[- (2 + extra_peers)].cmd(run_s)
+    print(results)
+
     # Drop the user in to a CLI so user can run commands.
-    CLI(net)
+    # CLI(net)
 
     # After the user exits the CLI, shutdown the network.
     net.stop()
