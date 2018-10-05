@@ -1,6 +1,6 @@
 #!/bin/bash
 
-samples=1
+samples=30
 
 for ((extra_peers=10; extra_peers <= 50; extra_peers=extra_peers+10))
 do
