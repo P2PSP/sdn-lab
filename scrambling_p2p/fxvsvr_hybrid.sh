@@ -2,7 +2,7 @@
 
 samples=30
 
-for ((extra_peers=10; extra_peers <= 50; extra_peers=extra_peers+10))
+for ((extra_peers=20; extra_peers <= 50; extra_peers=extra_peers+10))
 do
     for ((t=100; t <= 100; t=t+10))
     do

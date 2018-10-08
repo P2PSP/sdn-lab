@@ -18,7 +18,7 @@ extra_peers = $extra_peers
 EOM
 
 # Run controller
-ryu-manager scrambling_p2p_hybrid.py --config-file scrambling_p2p_hybrid.conf --log-file controller_hybrid.log& 
+ryu-manager scrambling_p2p_hybrid.py --config-file scrambling_p2p_hybrid.conf & 
 pid_controller=$!
 echo "Preparing the simulation..."
 sleep 4
