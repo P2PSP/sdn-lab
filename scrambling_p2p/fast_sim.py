@@ -30,6 +30,8 @@ if __name__ == "__main__":
                         help="Peers out of the SDN")
     parser.add_argument("-t", "--target", default=0, type=int,
                         help="Target")
+    parser.add_argument("-p", "--period", default=1, type=int,
+                        help="Scrambling Period")
     args = parser.parse_args()
 
     peer_list = create_team(args.size)
@@ -38,7 +40,8 @@ if __name__ == "__main__":
     print("TP is {}".format(tp))
     detected = False
     while not detected:
-        peer_list_random = scramble(peer_list)
+        if number_of_round % args.period == 0:
+            peer_list_random = scramble(peer_list)
         print("peer_list_random", peer_list_random)
         number_of_round += 1
         if args.target == 0:
